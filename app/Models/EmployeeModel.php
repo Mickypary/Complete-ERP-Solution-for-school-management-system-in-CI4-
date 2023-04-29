@@ -169,6 +169,47 @@ class EmployeeModel extends Model
     }
 
 
+    public function csvImport($row, $branchID, $userRole, $designationID, $departmentID)
+    {
+        $inser_data1 = array(
+            'name' => $row['Name'],
+            'sex' => $row['Gender'],
+            'religion' => $row['Religion'],
+            'blood_group' => $row['BloodGroup'],
+            'birthday' => date("Y-m-d", strtotime($row['DateOfBirth'])),
+            'joining_date' => date("Y-m-d", strtotime($row['JoiningDate'])),
+            'qualification' => $row['Qualification'],
+            'mobileno' => $row['MobileNo'],
+            'present_address' => $row['PresentAddress'],
+            'permanent_address' => $row['PermanentAddress'],
+            'email' => $row['Email'],
+            'designation' => $designationID,
+            'department' => $departmentID,
+            'branch_id' => $branchID,
+            'photo' => 'defualt.png',
+        );
+
+        $inser_data2 = array(
+            'username' => $row["Email"],
+            'role' => $userRole,
+        );
+
+        // RANDOM STAFF ID GENERATE
+        $inser_data1['staff_id'] = substr(app_generate_hash(), 3, 7);
+        // SAVE EMPLOYEE INFORMATION IN THE DATABASE
+        $this->db->table('staff')->insert($inser_data1);
+        $employeeID = $this->db->insertID();
+
+        // SAVE EMPLOYEE LOGIN CREDENTIAL INFORMATION IN THE DATABASE
+        $inser_data2['active'] = 1;
+        $inser_data2['user_id'] = $employeeID;
+        $inser_data2['password'] = $this->app_lib->pass_hashed($row["Password"]);
+        $this->db->table('login_credential')->insert($inser_data2);
+        return true;
+    }
+
+
+
     public function uploadImage($role) {
         $return_photo = 'defualt.png';
         $old_user_photo = $this->request->getVar('old_user_photo');

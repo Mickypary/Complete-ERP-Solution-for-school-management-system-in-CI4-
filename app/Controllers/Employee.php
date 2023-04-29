@@ -9,12 +9,21 @@ use App\Models\EmailModel;
 use App\Models\CrudModel;
 use App\Models\ApplicationModel;
 use App\Libraries\App_lib;
+use App\Libraries\Csvimport;
 
 /**
  * 
  */
 class Employee extends BaseController
 {
+    private $handle = "";
+    private $filepath = FALSE;
+    private $column_headers = FALSE;
+    private $initial_line = 0;
+    private $delimiter = ",";
+    private $detect_line_endings = FALSE;
+
+
 	public $validation;
 	public $employee_model;
 	public $email_model;
@@ -22,6 +31,7 @@ class Employee extends BaseController
     public $application_model;
     public $app_lib;
     public $router;
+    public $csvimport;
 	
 	function __construct()
 	{;
@@ -33,6 +43,7 @@ class Employee extends BaseController
 		$this->crud_model = new CrudModel();
         $this->application_model = new ApplicationModel();
         $this->app_lib = new App_lib();
+        $this->csvimport = new Csvimport();
 	}
 
 	public function index()
@@ -557,7 +568,7 @@ class Employee extends BaseController
             );
 
             $rules = [
-                'avatar' => [
+                'document_file' => [
                     'rules' => 'uploaded[document_file]|max_size[document_file,2048]|ext_in[document_file,png,jpg,gif,pdf,docx,csv,txt]',
                     'errors' => [
                         'ext_in' => 'Invalid file extension',
@@ -612,7 +623,7 @@ class Employee extends BaseController
             );
             if (isset($_FILES["document_file"]) && !empty($_FILES['document_file']['name'])) {
                 $rules = [
-                    'avatar' => [
+                    'document_file' => [
                         'rules' => 'uploaded[document_file]|max_size[document_file,2048]|ext_in[document_file,png,jpg,gif,pdf,docx,txt,csv]',
                         'errors' => [
                             'ext_in' => 'Invalid file extension',
@@ -742,6 +753,151 @@ class Employee extends BaseController
         $this->data['sub_page'] = 'employee/disable_authentication';
         $this->data['main_menu'] = 'employee';
         return view('layout/index', $this->data);
+    }
+
+
+    /* employee csv importer */
+    public function csv_import()
+    {
+        if (is_superadmin_loggedin()) {
+            $this->validation->setRule('branch_id', translate('branch'), 'trim|required');
+        }
+        $this->validation->setRule('user_role', translate('role'), 'trim|required');
+        $this->validation->setRule('designation_id', translate('designation'), 'trim|required');
+        $this->validation->setRule('department_id', translate('department'), 'trim|required');
+        if (isset($_FILES['userfile']['name']) && empty($_FILES['userfile']['name'])) {
+            $this->validation->setRule('userfile', "Select CSV File", 'required');
+        }
+        if ($this->validation->withRequest($this->request)->run() !== false) {
+            $branchID = $this->application_model->get_branch_id();
+            $userRole = $this->request->getVar('user_role');
+            $designationID = $this->request->getVar('designation_id');
+            $departmentID = $this->request->getVar('department_id');
+            $err_msg = "";
+            // $i = 0;
+
+            if($file = $this->request->getFile('userfile')) {
+                if ($file->isValid() && ! $file->hasMoved()) {
+                    $newName = $file->getRandomName();
+                    $file->move(ROOTPATH .'public/csvfile', $newName);
+                    
+                    $this->csvimport->importCsvToDb($branchID,$userRole,$designationID,$departmentID,$newName);
+                }
+            }
+        }else {
+            $error = $this->validation->getErrors();
+            echo json_encode(array('status' => 'fail', 'error' => $error));
+        }
+
+    }
+
+
+
+
+
+    /* employee csv importer */
+    // public function csv_import()
+    // {
+    //     if (is_superadmin_loggedin()) {
+    //         $this->validation->setRule('branch_id', translate('branch'), 'trim|required');
+    //     }
+    //     $this->validation->setRule('user_role', translate('role'), 'trim|required');
+    //     $this->validation->setRule('designation_id', translate('designation'), 'trim|required');
+    //     $this->validation->setRule('department_id', translate('department'), 'trim|required');
+    //     if (isset($_FILES['userfile']['name']) && empty($_FILES['userfile']['name'])) {
+    //         $this->validation->setRule('userfile', "Select CSV File", 'required');
+    //     }
+    //     if ($this->validation->withRequest($this->request)->run() !== false) {
+    //         $branchID = $this->application_model->get_branch_id();
+    //         $userRole = $this->request->getVar('user_role');
+    //         $designationID = $this->request->getVar('designation_id');
+    //         $departmentID = $this->request->getVar('department_id');
+    //         $err_msg = "";
+    //         // $i = 0;
+
+    //         if($file = $this->request->getFile('userfile')) {
+    //             if ($file->isValid() && ! $file->hasMoved()) {
+    //                 $newName = $file->getRandomName();
+    //                 $file->move(ROOTPATH .'public/csvfile', $newName);
+    //                 $file = fopen(ROOTPATH ."public/csvfile/".$newName,"r");
+    //                 $i = 0;
+    //                 $numberOfFields = 12;
+    //                 $csvArr = array();
+                    
+    //                 while (($filedata = fgetcsv($file, 0, $this->delimiter)) !== FALSE) {
+    //                     if ($filedata[0] == NULL)
+    //                     continue;
+    //                     $num = count($filedata);
+    //                     if($i > 0){ 
+    //                         $csvArr[$i]['Name'] = $filedata[0];
+    //                         $csvArr[$i]['Gender'] = $filedata[1];
+    //                         $csvArr[$i]['Religion'] = $filedata[2];
+    //                         $csvArr[$i]['BloodGroup'] = $filedata[3];
+    //                         $csvArr[$i]['DateOfBirth'] = $filedata[4];
+    //                         $csvArr[$i]['JoiningDate'] = $filedata[5];
+    //                         $csvArr[$i]['Qualification'] = $filedata[6];
+    //                         $csvArr[$i]['MobileNo'] = $filedata[7];
+    //                         $csvArr[$i]['PresentAddress'] = $filedata[8];
+    //                         $csvArr[$i]['PermanentAddress'] = $filedata[9];
+    //                         $csvArr[$i]['Email'] = $filedata[10];
+    //                         $csvArr[$i]['Password'] = $filedata[11];
+    //                         // echo "<pre>";
+    //                         // echo json_encode($filedata);
+    //                         // echo json_encode($filedata[0]);
+    //                     }
+    //                     $i++;
+    //                 }
+    //                 fclose($file);
+    //                 $count = 0;
+    //                 foreach($csvArr as $row){
+
+    //                     if (filter_var($row['Email'], FILTER_VALIDATE_EMAIL)) {
+    //                         // verify existing username
+    //                         $builder = $this->db->table('login_credential')->where('username', $row['Email']);
+    //                         $query = $builder->get();
+    //                         if ($query->getNumRows() > 0) {
+    //                             $err_msg .= $row['Name'] . " - Imported Failed : Email Already Exists.<br>";
+    //                         } else {
+    //                             // save all employee information in the database
+    //                             $this->employee_model->csvImport($row, $branchID, $userRole, $designationID, $departmentID);
+    //                             // $i++;
+    //                             $count++;
+    //                         }
+    //                     }else {
+    //                         $err_msg .= $row['Name'] . " - Imported Failed : Invalid Email.<br>";
+    //                     } /*End Validate Email*/
+
+    //                 } // ENd Foreach
+
+    //                 if ($err_msg != null) {
+    //                     $msgRes = $count . ' Students Have Been Successfully Added. <br>';
+    //                     $msgRes .= $err_msg;
+    //                     echo json_encode(array('status' => 'errlist', 'errMsg' => $msgRes));
+    //                     exit();
+    //                 }
+    //                 if ($count > 0) {
+    //                     set_alert('success', $count . ' Students Have Been Successfully Added');
+    //                 }
+
+    //                 echo json_encode(array('status' => 'success'));
+    //             }
+    //         }
+    //     }else {
+    //         $error = $this->validation->getErrors();
+    //         echo json_encode(array('status' => 'fail', 'error' => $error));
+    //     }
+
+    // } /*End Csv Import Method*/
+
+
+
+
+    /* sample csv downloader */
+    public function csv_Sampledownloader()
+    {
+        // $data = file_get_contents('uploads/multi_employee_sample.csv');
+        $data = ROOTPATH.'public/uploads/multi_employee_sample.csv';//file location+filename
+         return $this->response->download($data, null);//download file
     }
 
 

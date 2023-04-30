@@ -30,7 +30,7 @@ class App_lib
             $builder->where('role', 7);
         }
         $builder->where('user_id', $user_id);
-        $result = $builder->get('login_credential')->getRowArray();
+        $result = $builder->get()->getRowArray();
         return $result['id'];
     }
 

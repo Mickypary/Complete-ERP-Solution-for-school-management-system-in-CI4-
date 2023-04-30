@@ -3,6 +3,7 @@
 namespace App\Libraries\Validation;
 
 use App\Models\ApplicationModel;
+use App\Libraries\App_lib;
 
 
 /**
@@ -14,6 +15,7 @@ class myCustomRules
     public $db;
     public $validation;
     public $application_model;
+    public $app_lib;
 
 	public function __construct() {
 
@@ -21,6 +23,7 @@ class myCustomRules
     	$this->db = \Config\Database::connect();
     	$this->validation = \Config\Services::validation();
         $this->application_model = new ApplicationModel();
+        $this->app_lib = new App_lib();
 	}
 
 

@@ -73,8 +73,9 @@ class Employee extends BaseController
         $this->validation->setRule('facebook', 'Facebook', 'valid_url');
         $this->validation->setRule('twitter', 'Twitter', 'valid_url');
         $this->validation->setRule('linkedin', 'Linkedin', 'valid_url');
-        $this->validation->setRule('user_photo', 'profile_picture', 'uploaded[user_photo]|mime_in[user_photo,user_photo/jpg,user_photo/jpeg,user_photo/gif,user_photo/png]|max_size[user_photo,4096]');
-        // $this->validation->setRule('user_photo', 'profile_picture',array(array('handle_upload', array($this->application_model, 'profilePicUpload'))));
+        $this->validation->setRule('user_photo', 'Profile Picture', 'mime_in[user_photo,image/png,image/jpeg,image/jpg]|max_size[user_photo,4096]');
+
+        // $this->validation->setRule('user_photo', 'profile_picture',array('handle_upload', array($this->application_model, 'profilePicUpload')));
         // custom fields validation rules
         $class_slug = strtolower(class_basename($this->router->controllerName()));
         $customFields = getCustomFields($class_slug);
@@ -92,6 +93,11 @@ class Employee extends BaseController
 	/* getting all employee list */
     public function view($role = 2)
     {
+        if (!is_loggedin()) {
+            session()->set('redirect_url', current_url());
+            return redirect()->to(base_url().'authentication');
+        }
+
         if (!get_permission('employee', 'is_view') || ($role == 1 || $role == 6 || $role == 7)) {
             access_denied();
         }
@@ -780,8 +786,47 @@ class Employee extends BaseController
                 if ($file->isValid() && ! $file->hasMoved()) {
                     $newName = $file->getRandomName();
                     $file->move(ROOTPATH .'public/csvfile', $newName);
-                    
-                    $this->csvimport->importCsvToDb($branchID,$userRole,$designationID,$departmentID,$newName);
+                    $filepath = ROOTPATH . 'public/csvfile/'.$newName;
+                   
+                   // get the csv array from the importCsvToDb Library 
+                  $csvArr =  $this->csvimport->importCsvToDb($filepath);
+
+
+                  // Then Loop
+                   $count = 0;
+                    foreach($csvArr as $row){
+
+                        if (filter_var($row['Email'], FILTER_VALIDATE_EMAIL)) {
+                            // verify existing username
+                            $builder = $this->db->table('login_credential')->where('username', $row['Email']);
+                            $query = $builder->get();
+                            if ($query->getNumRows() > 0) {
+                                $err_msg .= $row['Name'] . " - Imported Failed : Email Already Exists.<br>";
+                            } else {
+                                // save all employee information in the database
+                                $this->employee_model->csvImport($row, $branchID, $userRole, $designationID, $departmentID);
+                                // $i++;
+                                $count++;
+                            }
+                        }else {
+                            $err_msg .= $row['Name'] . " - Imported Failed : Invalid Email.<br>";
+                        } /*End Validate Email*/
+
+                    } // ENd Foreach
+
+                    if ($err_msg != null) {
+                        $msgRes = $count . ' Students Have Been Successfully Added. <br>';
+                        $msgRes .= $err_msg;
+                        echo json_encode(array('status' => 'errlist', 'errMsg' => $msgRes));
+                        exit();
+                    }
+                    if ($count > 0) {
+                        set_alert('success', $count . ' Students Have Been Successfully Added');
+                    }
+
+                    echo json_encode(array('status' => 'success'));  
+
+
                 }
             }
         }else {

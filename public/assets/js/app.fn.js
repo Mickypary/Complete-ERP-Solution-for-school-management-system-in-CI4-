@@ -381,6 +381,7 @@ function getDesignationByBranch(id) {
             table: "staff_designation",
             branch_id: id
         },
+        // cache: false, //It must "true" if you want to cache else "false"
         success: function (response) {
             $('#designation_id').html(response);
         }
@@ -395,6 +396,7 @@ function getDepartmentByBranch(id) {
             table: "staff_department",
             branch_id: id
         },
+        // cache: false, //It must "true" if you want to cache else "false"
         success: function (response) {
             $('#department_id').html(response);
         }

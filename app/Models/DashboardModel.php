@@ -16,6 +16,14 @@ class DashboardModel extends Model
 		$this->db = \Config\Database::connect();
 	}
 
+
+    public function getMonthlyBookIssued($id = '')
+    {
+        $builder = $this->db->table('leave_application')->select('id');
+        $builder->where("start_date BETWEEN DATE_SUB(CURDATE() ,INTERVAL 1 MONTH) AND CURDATE() AND status = '2' AND role_id = '7' AND user_id = " . $this->db->escape($id));
+        return $builder->get()->getNumRows();
+    }
+
 	public function getStaffCounter($role='', $branchID = '')
     {
         $builder = $this->db->table('staff')->select('count(staff.id) as snumber');
@@ -30,6 +38,14 @@ class DashboardModel extends Model
             $builder->where('staff.branch_id', $branchID);
         }
         return $builder->get()->getRowArray();
+    }
+
+    public function getMonthlyPayment($id = '')
+    {
+        $builder = $this->db->table('fee_allocation as fa')->select('IFNULL(sum(h.amount),0) as amount');
+        $builder->join('fee_payment_history as h', 'h.allocation_id = fa.id', 'left');
+        $builder->where("h.date BETWEEN DATE_SUB(CURDATE(),INTERVAL 1 MONTH) AND CURDATE() AND fa.student_id = " . $this->db->escape($id) . " AND fa.session_id = " . $this->db->escape(get_session_id()));
+        return $builder->get()->getRow()->amount;
     }
 
 
@@ -79,6 +95,34 @@ class DashboardModel extends Model
             'total_paid' => $total_paid,
             'total_due' => $total_due,
         );
+    }
+
+
+    /* student annual attendance charts */
+    public function getStudentAttendance($studentID = '')
+    {
+        $total_present = array();
+        $total_absent = array();
+        $total_late = array();
+        for ($month = 1; $month <= 12; $month++):
+            $total_present[] = $this->db->query("SELECT id FROM student_attendance WHERE MONTH(date) = " . $this->db->escape($month) . " AND YEAR(date) = YEAR(CURDATE()) AND status = 'P' AND student_id = " . $this->db->escape($studentID))->getNumRows();
+            $total_absent[] = $this->db->query("SELECT id FROM student_attendance WHERE MONTH(date) = " . $this->db->escape($month) . " AND YEAR(date) = YEAR(CURDATE()) AND status = 'A' AND student_id = " . $this->db->escape($studentID))->getNumRows();
+            $total_late[] = $this->db->query("SELECT id FROM student_attendance WHERE MONTH(date) = " . $this->db->escape($month) . " AND YEAR(date) = YEAR(CURDATE()) AND status = 'L' AND student_id = " . $this->db->escape($studentID))->getNumRows();
+        endfor;
+        return array(
+            'total_present' => $total_present,
+            'total_absent' => $total_absent,
+            'total_late' => $total_late,
+        );
+    }
+
+    public function get_monthly_attachments($id = '')
+    {
+        $branchID = get_loggedin_branch_id();
+        $classID = $this->db->table('enroll')->select('class_id')->where('student_id', $id)->get()->getRow()->class_id;
+        $builder = $this->db->table('attachments')->select('id');
+        $builder->where("date BETWEEN DATE_SUB(CURDATE() ,INTERVAL 1 MONTH) AND CURDATE() AND (class_id = " . $this->db->escape($classID) . " OR class_id = 'unfiltered') AND branch_id = " . $this->db->escape($branchID));
+        return $builder->get()->getNumRows();
     }
 
 

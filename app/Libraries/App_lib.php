@@ -19,6 +19,30 @@ class App_lib
 	}
 
 
+    public function getStaffList($branch_id = '', $role='')
+    {
+        $builder = $this->db->table('staff as s');
+        if (empty($branch_id)) {
+            $array = array('' => translate('select_branch_first'));
+        } else {
+            $builder->select('s.id,s.name,s.staff_id');
+            $builder->join('login_credential as l', 'l.user_id = s.id and l.role != 6 and l.role != 7', 'inner');
+            if (!empty($branch_id)) {
+                $builder->where('s.branch_id', $branch_id);
+            }
+            if (!empty($role)) {
+                $builder->whereIn('l.role', array($role));
+            }
+            $result = $builder->get()->getResult();
+            $array = array('' => translate('select'));
+            foreach ($result as $row) {
+                $array[$row->id] = $row->name . ' (' . $row->staff_id . ')';
+            }
+        }
+        return $array;
+    }
+
+
     public function get_credential_id($user_id, $staff = 'staff')
     {
         $builder = $this->db->table('login_credential')->select('id');
@@ -236,6 +260,150 @@ class App_lib
         $builder->join("branch as b", "b.id = t.branch_id", "left");
         $query = $builder->get();
         return $query->$method();
+    }
+
+
+    public function getClass($branch_id = '')
+    {
+        $builder = $this->db->table('teacher_allocation');
+        if (empty($branch_id)) {
+            $array = array('' => translate('select_branch_first'));
+        } else {
+            if (loggedin_role_id() == 3) {
+                $builder->select('class.id,class.name');
+                $builder->join('class', 'class.id = teacher_allocation.class_id', 'left');
+                $builder->where('teacher_allocation.teacher_id', get_loggedin_user_id());
+                $builder->where('teacher_allocation.session_id', get_session_id());
+                $result = $builder->get()->getResult();
+            } else {
+                $builder = $this->db->table('class')->where('branch_id', $branch_id);
+                $result = $builder->get()->getResult();
+            }
+            $array = array('' => translate('select'));
+            foreach ($result as $row) {
+                $array[$row->id] = $row->name;
+            }
+        }
+        return $array;
+    }
+
+
+    public function getSections($class_id = '', $all = false, $multi = false)
+    {
+        if (empty($class_id)) {
+            $array = array('' => translate('select_class_first'));
+        } else {
+            if (loggedin_role_id() == 3) {
+                $result = $this->db->table('teacher_allocation')->select('teacher_allocation.section_id,section.name')
+                    ->join('section', 'section.id = teacher_allocation.section_id', 'left')
+                    ->where(array('teacher_allocation.class_id' => $class_id,
+                        'teacher_allocation.teacher_id' => get_loggedin_user_id(),
+                        'teacher_allocation.session_id' => get_session_id()))
+                    ->get()->getResult();
+            } else {
+                $builder = $this->db->table('sections_allocation')->where('class_id', $class_id);
+                $result = $builder->get()->getResult(); 
+            }
+            if ($multi == false) {
+                $array = array('' => translate('select'));
+            }
+            if ($all == true && loggedin_role_id() != 3) {
+                $array['all'] = translate('all_sections');
+            }
+            foreach ($result as $row) {
+                $array[$row->section_id] = get_type_name_by_id('section', $row->section_id);
+            }
+        }
+        return $array;
+    }
+
+
+    function get_table($table, $id = NULL, $single = FALSE)
+    {
+        $builder = $this->db->table($table);
+
+        if ($single == TRUE) {
+            $method = 'getRowArray';
+        } else {
+            $builder->orderBy('id', 'ASC');
+            $method = 'getResultArray';
+        }
+        if ($id != NULL) {
+            $builder->where('id', $id);
+        }
+        $query = $builder->get();
+        return $query->$method();
+    }
+
+
+    public function getRoomByHostel($hostel_id = '')
+    {
+        if ($hostel_id == '') {
+            $array = array('' => translate('first_select_the_hostel'));
+        } else {
+            $builder = $this->db->table('hostel_room')->where('hostel_id', $hostel_id);
+            $result = $builder->get()->getResult();
+            $array = array('' => translate('select'));
+            foreach ($result as $row) {
+                $array[$row->id] = $row->name . ' ('. get_type_name_by_id('hostel_category', $row->category_id).')';
+            }
+        }
+        return $array;
+    }
+
+
+    public function getVehicleByRoute($route_id = '')
+    {
+        if ($route_id == '') {
+            $array = array('' => translate('first_select_the_route'));
+        } else {
+            $builder = $this->db->table('transport_assign')->where('route_id', $route_id);
+            $result = $builder->get()->getResult();
+            $array = array('' => translate('select'));
+            foreach ($result as $row) {
+                $array[$row->vehicle_id] = get_type_name_by_id('transport_vehicle', $row->vehicle_id, 'vehicle_no');
+            }
+        }
+        return $array;
+    }
+
+
+    public function getStudentCategory($branch_id = '')
+    {
+        if (empty($branch_id)) {
+            $array = array('' => translate('select_branch_first'));
+        } else {
+            $builder = $this->db->table('student_category')->where('branch_id', $branch_id);
+            $result = $builder->get()->getResult();
+            $array = array('' => translate('select'));
+            foreach ($result as $row) {
+                $array[$row->id] = $row->name;
+            }
+        }
+        return $array;
+    }
+
+
+    public function getSelectByBranch($table, $branch_id = '', $all = false, $where = '')
+    {
+        $builder = $this->db->table($table);
+        if (empty($branch_id)) {
+            $array = array('' => translate('select_branch_first'));
+        } else {
+            if (is_array($where)) {
+                $builder->where($where);
+            }
+            $builder->where('branch_id', $branch_id);
+            $result = $builder->get()->getResult();
+            $array = array('' => translate('select'));
+            if ($all == true) {
+                $array['all'] = translate('all_select');
+            }
+            foreach ($result as $row) {
+                $array[$row->id] = $row->name;
+            }
+        }
+        return $array;
     }
 
 

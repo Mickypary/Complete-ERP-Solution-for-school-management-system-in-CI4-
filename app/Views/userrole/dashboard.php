@@ -1,15 +1,25 @@
+<?php
+use App\Models\DashboardModel;
+
+$this->db = \Config\Database::connect();
+$this->dashboard_model = new DashboardModel();
+
+
+?>
+
+
+
 <?php if (empty($student_id)): ?>
 	<div class="row">
 		<?php
-		$this->db->select('s.id,s.first_name,s.last_name,s.photo,s.register_no,s.birthday,e.class_id,e.section_id,e.roll,e.session_id,c.name as class_name,se.name as section_name');
-		$this->db->from('enroll as e');
-		$this->db->join('student as s', 'e.student_id = s.id', 'left');
-		$this->db->join('class as c', 'e.class_id = c.id', 'left');
-		$this->db->join('section as se', 'e.section_id = se.id', 'left');
-		$this->db->where('s.parent_id', get_loggedin_user_id());
-		$query = $this->db->get();
-		if ($query->num_rows() > 0) {
-			$students = $query->result();
+		$builder = $this->db->table('enroll as e')->select('s.id,s.first_name,s.last_name,s.photo,s.register_no,s.birthday,e.class_id,e.section_id,e.roll,e.session_id,c.name as class_name,se.name as section_name')
+		->join('student as s', 'e.student_id = s.id', 'left')
+		->join('class as c', 'e.class_id = c.id', 'left')
+		->join('section as se', 'e.section_id = se.id', 'left')
+		->where('s.parent_id', get_loggedin_user_id());
+		$query = $builder->get();
+		if ($query->getNumRows() > 0) {
+			$students = $query->getResult();
 			foreach ($students as $row):
 		?>
 		<div class="col-md-12 mb-lg">
@@ -22,12 +32,12 @@
 					</div>
 				</div>
 				<div class="col-md-12 col-lg-5 col-xl-5">
-					<h5><?=html_escape($row->first_name . " " . $row->last_name)?></h5>
+					<h5><?=esc($row->first_name . " " . $row->last_name)?></h5>
 					<p><?=translate('my_child')?></p>
 					<ul>
-						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('class')?>"><i class="fas fa-school"></i></div><?=html_escape($row->class_name).' ('.html_escape($row->section_name).')'?></li>
-						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('roll')?>"><i class="fas fa-award"></i></div><?=html_escape($row->roll)?></li>
-						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('register_no')?>"><i class="far fa-registered"></i></div><?=html_escape($row->register_no)?></li>
+						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('class')?>"><i class="fas fa-school"></i></div><?=esc($row->class_name).' ('.esc($row->section_name).')'?></li>
+						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('roll')?>"><i class="fas fa-award"></i></div><?=esc($row->roll)?></li>
+						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('register_no')?>"><i class="far fa-registered"></i></div><?=esc($row->register_no)?></li>
 						<li><div class="icon-holder" data-toggle="tooltip" data-original-title="<?=translate('birthday')?>"><i class="fas fa-birthday-cake"></i></div><?=_d($row->birthday)?></li>
 					</ul>
 				</div>
@@ -128,9 +138,9 @@ else :
 							<div class="col-md-6 col-sm-6 col-xs-6">
 								<h3 class="counter text-right mt-md text-primary">
 									<?php
-										$this->db->from('event');
-										$this->db->where('start_date BETWEEN DATE_SUB(CURDATE() ,INTERVAL 1 MONTH) AND CURDATE() AND branch_id = "'. get_loggedin_branch_id() .'"');
-								    	echo $this->db->get()->num_rows();				
+										$builder = $this->db->table('event');
+										$builder->where('start_date BETWEEN DATE_SUB(CURDATE() ,INTERVAL 1 MONTH) AND CURDATE() AND branch_id = "'. get_loggedin_branch_id() .'"');
+								    	echo $builder->get()->getNumRows();				
 									?>
 								</h3>
 							</div>

@@ -6,7 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^7.4 || ^8.0",
-        "codeigniter4/framework": "^4.0"
+        "chillerlan/php-qrcode": "^4.3",
+        "codeigniter4/framework": "^4.0",
+        "stripe/stripe-php": "^10.13",
+        "twilio/sdk": "^7.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",

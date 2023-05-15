@@ -1,0 +1,2 @@
+FirstName,LastName,BloodGroup,Gender,Birthday,MotherTongue,Religion,Caste,Phone,City,State,PresentAddress,PermanentAddress,CategoryID,Roll,AdmissionDate,StudentEmail,StudentPassword,GuardianName,GuardianRelation,FatherName,MotherName,GuardianOccupation,GuardianMobileNo,GuardianAddress,GuardianEmail,GuardianPassword
+David,Adams,A+,Male,2023-05-14,Benue,Christianity,car,0918765845,Ikeja,Lagos,Ikeja,Ikeja,1,1,2023-05-14,adams@gmail.com,password,Adams,Father,Paul,Helen,Engr,0812345654,Lekki,paul@gmail.com,password

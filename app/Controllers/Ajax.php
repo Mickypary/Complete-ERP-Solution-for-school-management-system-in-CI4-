@@ -24,6 +24,67 @@ class Ajax extends BaseController
 	}
 
 
+    public function getClassByBranch()
+    {
+        $html = "";
+        $branch_id = $this->application_model->get_branch_id();
+        if (!empty($branch_id)) {
+            $classes = $this->db->table('class')->select('id,name')->where('branch_id', $branch_id)->get()->getResultArray();
+            if (count($classes)) {
+                $html .= "<option value=''>" . translate('select') . "</option>";
+                foreach ($classes as $row) {
+                    $html .= '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
+                }
+            } else {
+                $html .= '<option value="">' . translate('no_information_available') . '</option>';
+            }
+        } else {
+            $html .= '<option value="">' . translate('select_branch_first') . '</option>';
+        }
+        echo $html;
+    }
+
+
+
+    // get section list based on the class
+    public function getSectionByClass()
+    {
+        $html = "";
+        $classID = $this->request->getVar("class_id");
+        $mode = $this->request->getVar("all");
+        $multi = $this->request->getVar("multi");
+        if (!empty($classID)) {
+            if (loggedin_role_id() == 3) {
+                $result = $this->db->table('teacher_allocation')->select('teacher_allocation.section_id,section.name')
+                    ->join('section', 'section.id = teacher_allocation.section_id', 'left')
+                    ->where(array('teacher_allocation.class_id' => $classID, 'teacher_allocation.teacher_id' => get_loggedin_user_id(), 'teacher_allocation.session_id' => get_session_id()))
+                    ->get()->getResultArray();
+            } else {
+                $result = $this->db->table('sections_allocation')->select('sections_allocation.section_id,section.name')
+                    ->join('section', 'section.id = sections_allocation.section_id', 'left')
+                    ->where('sections_allocation.class_id', $classID)
+                    ->get()->getResultArray();
+            }
+            if (count($result)) {
+                if ($multi == false) {
+                   $html .= '<option value="">' . translate('select') . '</option>';
+                }
+                if ($mode == true && loggedin_role_id() != 3) {
+                    $html .= '<option value="all">' . translate('all_sections') . '</option>';
+                }
+                foreach ($result as $row) {
+                    $html .= '<option value="' . $row['section_id'] . '">' . $row['name'] . '</option>';
+                }
+            } else {
+                $html .= '<option value="">' . translate('no_selection_available') . '</option>';
+            }
+        } else {
+            $html .= '<option value="">' . translate('select_class_first') . '</option>';
+        }
+        echo $html;
+    }
+
+
 
 
 
@@ -32,6 +93,7 @@ class Ajax extends BaseController
         $html = "";
         $table = $this->request->getVar('table');
         $branch_id = $this->application_model->get_branch_id();
+        // $branch_id = $this->request->getVar('branch_id');
         if (!empty($branch_id)) {
             $result = $this->db->table($table)->select('id,name')->where('branch_id', $branch_id)->get()->getResultArray();
             if (count($result)) {
@@ -72,6 +134,35 @@ class Ajax extends BaseController
             $result = $query->getRowArray();
             echo json_encode($result);
         }
+    }
+
+
+    public function getStafflistRole()
+    {
+        $html = "";
+        $branch_id = $this->application_model->get_branch_id();
+        if (!empty($branch_id)) {
+            $role_id = $this->request->getVar('role_id');
+            $selected_id = (isset($_POST['staff_id']) ? $_POST['staff_id'] : 0);
+            $builder = $this->db->table('staff')->select('staff.id,staff.name,staff.staff_id,lc.role');
+            $builder->join('login_credential as lc', 'lc.user_id = staff.id AND lc.role != 6 AND lc.role != 7', 'inner');
+            $builder->where('lc.role', $role_id);
+            $builder->where('staff.branch_id', $branch_id);
+            $builder->orderBy('staff.id', 'asc');
+            $result = $builder->get()->getResultArray();
+            if (count($result)) {
+                $html .= "<option value=''>" . translate('select') . "</option>";
+                foreach ($result as $staff) {
+                    $selected = ($staff['id'] == $selected_id ? 'selected' : '');
+                    $html .= "<option value='" . $staff['id'] . "' " . $selected . ">" . $staff['name'] . " (" . $staff['staff_id'] . ")</option>";
+                }
+            } else {
+                $html .= '<option value="">' . translate('no_information_available') . '</option>';
+            }
+        } else {
+            $html .= '<option value="">' . translate('select_branch_first') . '</option>';
+        }
+        echo $html;
     }
 
 

@@ -25,6 +25,7 @@ class ApplicationModel extends Model
     public function get_branch_id()
     {
         if (is_superadmin_loggedin()) {
+            // gets it from ajax form data for any name with branch_id
             return $this->request->getPost('branch_id');
         } else {
             return get_loggedin_branch_id();
@@ -72,10 +73,10 @@ class ApplicationModel extends Model
     {
         if ($roleID == 6) {
             $sql = "SELECT name,email,photo,branch_id FROM parent WHERE id = " . $this->db->escape($userID);
-            return $this->db->query($sql)->row_array();
+            return $this->db->query($sql)->getRowArray();
         } elseif ($roleID == 7) {
             $sql = "SELECT student.id, CONCAT(student.first_name,' ',student.last_name) as name, student.email, student.photo, enroll.branch_id FROM student INNER JOIN enroll ON enroll.student_id = student.id WHERE student.id = " . $this->db->escape($userID);
-            return $this->db->query($sql)->row_array();
+            return $this->db->query($sql)->getRowArray();
         } else {
             $sql = "SELECT name,email,photo,branch_id FROM staff WHERE id = " . $this->db->escape($userID);
             return $this->db->query($sql)->getRowArray();
@@ -181,6 +182,45 @@ class ApplicationModel extends Model
         }
         return $return_photo;
     } /*End Method*/
+
+
+    public function smsServiceProvider($branch_id)
+    {
+        $builder = $this->db->table('sms_credential')->select('sms_api_id');
+        $builder->where('branch_id', $branch_id);
+        $builder->where('is_active', 1);
+        $r = $builder->get()->getRowArray();
+        if ($r == "") {
+            return 'disabled';
+        } else {
+           return  $r['sms_api_id'];
+        }
+    }
+
+
+    public function getStudentListByClassSection($classID = '', $sectionID = '', $branchID = '', $deactivate = false, $rollOrder = false)
+    {
+        $builder = $this->db->table('enroll as e')->select('e.*,s.photo, CONCAT(s.first_name, " ", s.last_name) as fullname,s.register_no,s.parent_id,s.email,s.mobileno,s.blood_group,s.birthday,s.admission_date,l.active,c.name as class_name,se.name as section_name')
+        ->join('student as s', 'e.student_id = s.id', 'inner')
+        ->join('login_credential as l', 'l.user_id = s.id and l.role = 7', 'inner')
+        ->join('class as c', 'e.class_id = c.id', 'left')
+        ->join('section as se', 'e.section_id=se.id', 'left')
+        ->where('e.class_id', $classID)
+        ->where('e.branch_id', $branchID)
+        ->where('e.session_id', get_session_id());
+        if ($rollOrder == true) {
+            $builder->orderBy('e.roll', 'ASC');
+        } else {
+            $builder->orderBy('s.id', 'ASC');
+        }
+        if ($sectionID != 'all') {
+            $builder->where('e.section_id', $sectionID);
+        }
+        if ($deactivate == true) {
+            $builder->where('l.active', 0);
+        }
+        return $builder->get()->getResultArray();
+    }
 
 
 

@@ -78,6 +78,7 @@ abstract class BaseController extends Controller
         // Declare anything here example models and controller;
 
         $this->db = \Config\Database::connect();
+        $this->validation = \Config\Services::validation();
 
 
         $get_config = $this->db->table('global_settings')->where(array('id'=>1))->get()->getRowArray();

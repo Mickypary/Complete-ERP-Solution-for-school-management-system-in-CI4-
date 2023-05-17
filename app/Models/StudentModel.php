@@ -145,7 +145,8 @@ class StudentModel extends Model
         }
         $query = $builder->get();
         if ($this->db->affectedRows() == 0) {
-            show_404();
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            // show_404();
         }
         return $query->getRowArray();
     }

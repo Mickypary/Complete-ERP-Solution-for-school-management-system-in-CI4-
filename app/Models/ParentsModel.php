@@ -84,7 +84,8 @@ class ParentsModel extends Model
         ->join('class as c', 'e.class_id = c.id', 'left')
         ->join('section as se', 'e.section_id=se.id', 'left')
         ->where('s.parent_id', $parent_id)
-        ->where('l.active', 1);
+        ->where('l.active', 1)
+        ->where('session_id', get_session_id());
         return $builder->get()->getResultArray();
     }
 
@@ -114,7 +115,8 @@ class ParentsModel extends Model
         }
         $query = $builder->get();
         if ($this->db->affectedRows() == 0) {
-            show_404();
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            // show_404();
         }
         return $query->getRowArray();
     }

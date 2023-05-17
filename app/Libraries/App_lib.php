@@ -406,6 +406,21 @@ class App_lib
         return $array;
     }
 
+    public function check_branch_restrictions($table, $id = '') {
+        if (empty($id)) {
+             access_denied();
+        }
+        if (!is_superadmin_loggedin()) {
+            $query = $this->db->table($table)->select('id,branch_id')->where('id', $id)->limit(1)->get();
+            if ($query->getNumRows() != 0) {
+                $branch_id = $query->getRow()->branch_id;
+                if ($branch_id != $this->session->get('loggedin_branch')) {
+                    access_denied();
+                }
+            }
+        }
+    }
+
 
 
 

@@ -361,6 +361,22 @@ class myCustomRules
         }
     }
 
+    // validate here, if the check class assign
+    public function unique_subject_assign($class_id)
+    {
+        $where = array(
+            'class_id' => $class_id,
+            'section_id' => $this->request->getVar('section_id'),
+            'session_id' => get_session_id(),
+        );
+        $q = $this->db->table('subject_assign')->getWhere($where)->getNumRows();
+        if ($q == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
 
 

@@ -166,6 +166,33 @@ class Ajax extends BaseController
     }
 
 
+    // get class assign modal
+    public function getClassAssignM()
+    {
+        $classID = $this->request->getVar('class_id');
+        $sectionID = $this->request->getVar('section_id');
+        $branchID = get_type_name_by_id('class', $classID, 'branch_id');
+        $html = "";
+        $subjects = $this->db->table('subject')->getWhere(array('branch_id' => $branchID))->getResultArray();
+        if (count($subjects)) {
+            foreach ($subjects as $row) {
+                $query_assign = $this->db->table('subject_assign')->getWhere(array(
+                    'class_id' => $classID,
+                    'section_id' => $sectionID,
+                    'session_id' => get_session_id(),
+                    'subject_id' => $row['id'],
+                ));
+                $html .= '<option value="' . $row['id'] . '"' . ($query_assign->getNumRows() != 0 ? 'selected' : '') . '>' . $row['name'] . '</option>';
+            }
+        }
+        $data['branch_id'] = $branchID;
+        $data['class_id'] = $classID;
+        $data['section_id'] = $sectionID;
+        $data['subject'] = $html;
+        echo json_encode($data);
+    }
+
+
 
 
 

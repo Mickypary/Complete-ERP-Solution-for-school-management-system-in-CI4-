@@ -68,7 +68,7 @@ class Custom_field extends BaseController
         $field_type = $this->request->getVar('field_type');
         $default_value = '';
         if ($field_type == 'dropdown') {
-            $this->form_validation->setRule('dropdown_default_value', translate('default_value'), 'trim|required');
+            $this->validation->setRule('dropdown_default_value', translate('default_value'), 'trim|required');
             $defaultValue = $this->request->getVar('dropdown_default_value');
         } elseif ($field_type == 'checkbox') {
             $defaultValue = $this->request->getVar('checkbox_default_value');

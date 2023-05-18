@@ -223,5 +223,18 @@ class ApplicationModel extends Model
     }
 
 
+    // get exam and term name
+    public function exam_name_by_id($exam_id)
+    {
+        $getExam = $this->db->table('exam')->getWhere(array('id' => $exam_id))->getRowArray();
+        if (!empty($getExam['term_id'])) {
+            $getTerm = $this->db->table('exam_term')->getWhere(array('id' => $getExam['term_id']))->getRowArray();
+            return $getExam['name'] . ' (' . $getTerm['name'] . ')';
+        } else {
+            return $getExam['name'];
+        }
+    }
+
+
 
 } /*End Class*/

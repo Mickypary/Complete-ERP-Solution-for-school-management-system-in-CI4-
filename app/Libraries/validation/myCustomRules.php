@@ -377,6 +377,63 @@ class myCustomRules
         }
     }
 
+    /* unique valid exam term name verification is done here */
+    public function unique_term($name)
+    {
+        $builder = $this->db->table('exam_term');
+        $branchID = $this->application_model->get_branch_id();
+        $term_id = $this->request->getVar('term_id');
+        if (!empty($term_id)) {
+            $builder->whereNotIn('id', [$term_id]);
+        }
+        $builder->where(array('name' => $name, 'branch_id' => $branchID));
+        $uniform_row = $builder->get()->getNumRows();
+        if ($uniform_row == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /* exam hall number exists validation */
+    public function unique_hall_no($hall_no)
+    {
+        $branchID = $this->application_model->get_branch_id();
+        $hall_id = $this->request->getVar('hall_id');
+
+        $builder = $this->db->table('exam_hall');
+        if (!empty($hall_id)) {
+            $builder->whereNotIn('id', [$hall_id]);
+        }
+        $builder->where(array('hall_no' => $hall_no, 'branch_id' => $branchID));
+        $uniform_row = $builder->get()->getNumRows();
+        if ($uniform_row == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // check exam hall room capacity
+    public function check_hallseat_capacity($hallid)
+    {
+        if ($hallid) {
+            $classID = $this->request->getVar('class_id');
+            $sectionID = $this->request->getVar('section_id');
+            $seats = $this->db->table('exam_hall')->getWhere(array('id' => $hallid))->getRow()->seats;
+            $stuCount = $this->db->table('enroll')->getWhere(array(
+                'class_id' => $classID,
+                'section_id' => $sectionID,
+                'session_id' => get_session_id(),
+            ))->getNumRows();
+            if ($stuCount > $seats) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
 
 
 

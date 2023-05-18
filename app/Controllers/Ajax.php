@@ -23,6 +23,35 @@ class Ajax extends BaseController
         $this->application_model = new ApplicationModel();
 	}
 
+    // get exam list based on the branch
+    public function getExamByBranch()
+    {
+        $html = "";
+        $branchID = $this->application_model->get_branch_id();
+        if (!empty($branchID)) {
+            $builder = $this->db->table('exam')->select('id,name,term_id')
+            ->where(array('branch_id' => $branchID, 'session_id' => get_session_id()));
+            $result = $builder->get()->getResultArray();
+            if (count($result)) {
+                $html .= '<option value="">' . translate('select') . '</option>';
+                foreach ($result as $row) {
+                    if ($row['term_id'] != 0) {
+                        $term = $this->db->table('exam_term')->select('name')->where('id', $row['term_id'])->get()->getRow()->name;
+                        $name = $row['name'] . ' (' . $term . ')';
+                    } else {
+                        $name = $row['name'];
+                    }
+                    $html .= '<option value="' . $row['id'] . '">' . $name . '</option>';
+                }
+            } else {
+                $html .= '<option value="">' . translate('no_information_available') . '</option>';
+            }
+        } else {
+            $html .= '<option value="">' . translate('select_branch_first') . '</option>';
+        }
+        echo $html;
+    }
+
 
     public function getClassByBranch()
     {

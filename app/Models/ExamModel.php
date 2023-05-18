@@ -34,7 +34,7 @@ class ExamModel extends Model
         return $builder->get()->getResultArray();
     }
 
-
+    // Store exam mark distribution inside exam table
     public function exam_save($data)
     {
     	$builder = $this->db->table('exam');

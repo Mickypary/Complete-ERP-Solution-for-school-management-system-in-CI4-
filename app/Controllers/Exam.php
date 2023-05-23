@@ -505,15 +505,27 @@ class Exam extends BaseController
                         if ($absent) {
                             $this->db->table('mark')->where('id', $query->getRow()->id)->delete();
                         }
-                        $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
-                        // header("Refresh:0");
-                    } else {
+                        if ($typeID == 3) {
+                            $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
+                            $this->db->table('mark')->where(array('type_id' => 4, 'student_id' => $value['student_id']))->update(array('mark_mid' => $inputMark));
+                        }else {
+                            $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
+                        }
+                        // $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
+                    } elseif($typeID == 3) {
                         $arrayMarks['mark'] = $inputMark;
+                        $arrayMarks['mark_mid'] = $inputMark;
                         $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
                         // send exam results sms
                         // $this->sms_model->send_sms($arrayMarks, 5);
+                    }else {
+                        $arrayMarks['mark'] = $inputMark;
+                        // $arrayMarks['mark_mid'] = $inputMark;
+                        $arrayMarks['total'] = $totalMark;
+                        $arrayMarks['absent'] = $absent;
+                        $this->db->table('mark')->insert($arrayMarks);
                     }
                 }
                 $message = translate('information_has_been_saved_successfully');

@@ -287,30 +287,6 @@ class App_lib
         return $array;
     }
 
-    public function getExamType($branch_id = '')
-    {
-        $builder = $this->db->table('exam');
-        if (empty($branch_id)) {
-            $array = array('' => translate('select_branch_first'));
-        } else {
-            if (loggedin_role_id() == 3) {
-                $builder->select('class.id,class.name');
-                $builder->join('class', 'class.id = teacher_allocation.class_id', 'left');
-                $builder->where('teacher_allocation.teacher_id', get_loggedin_user_id());
-                $builder->where('teacher_allocation.session_id', get_session_id());
-                $result = $builder->get()->getResult();
-            } else {
-                $builder = $this->db->table('exam')->where('branch_id', $branch_id);
-                $result = $builder->get()->getResult();
-            }
-            $array = array('' => translate('select'));
-            foreach ($result as $row) {
-                $array[$row->id] = $row->name;
-            }
-        }
-        return $array;
-    }
-
 
     public function getSections($class_id = '', $all = false, $multi = false)
     {

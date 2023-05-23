@@ -6,6 +6,7 @@ use CodeIgniter\Controller;
 
 use App\Models\AjaxModel;
 use App\Models\ApplicationModel;
+use App\Models\ExamModel;
 
 /**
  * 
@@ -15,12 +16,14 @@ class Ajax extends BaseController
 	public $ajax_model;
 	public $db;
     public $application_model;
+    public $exam_model;
 	
 	function __construct()
 	{
 		$this->ajax_model = new AjaxModel();
 		$this->db = \Config\Database::connect();
         $this->application_model = new ApplicationModel();
+        $this->exam_model = new ExamModel();
 	}
 
     // get exam list based on the branch
@@ -220,6 +223,34 @@ class Ajax extends BaseController
         $data['subject'] = $html;
         echo json_encode($data);
     }
+
+    // public function getMarkByStudentID()
+    // {
+    //     $html = "";
+    //     $studentID = $this->request->getVar('student_id');
+    //     $branch_id = $this->application_model->get_branch_id();
+    //     // $branch_id = $this->request->getVar('branch_id');
+    //     // if (!empty($branch_id)) {
+    //         $result = $this->db->table('mark')->select('id,mark')
+    //         ->where('student_id', $studentID)
+    //         ->get()->getResultArray();
+    //         if (count($result)) {
+    //             $timetable_detail = $this->exam_model->getTimetableDetail($classID, $sectionID, $examID, $subjectID);
+    //             $distributions = json_decode($timetable_detail['mark_distribution'], true);
+    //             foreach ($result as $row) {
+    //                 $getDetails = json_decode($row['get_mark'], true);
+    //                 foreach($distributions as $id => $ass){
+    //                  $html .=   $existMark = isset($getDetails[$id]) ? $getDetails[$id]  : '';
+    //                  // echo 'here';
+    //                 }
+    //                 // $html .= $getDetails[]
+    //             }
+    //         } else {
+    //             $html .= 'failed woefully';
+    //         }
+    //     // } 
+    //     echo $html;
+    // }
 
 
 

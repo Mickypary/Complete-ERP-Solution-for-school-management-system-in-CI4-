@@ -14,7 +14,7 @@ $this->exam_model = new ExamModel();
 
 
 $widget = (is_superadmin_loggedin() ? 2 : 3);
-$branch = $this->db->where('id',$branch_id)->get('branch')->row_array();
+$branch = $this->db->table('branch')->where('id',$branch_id)->get()->getRowArray();
 ?>
 <div class="row">
 	<div class="col-md-12">

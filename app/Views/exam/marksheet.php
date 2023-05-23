@@ -4,6 +4,7 @@ use App\Models\ApplicationModel;
 
 $this->app_lib = new App_lib();
 $this->application_model = new ApplicationModel();
+$this->db = \Config\Database::connect();
 
 ?>
 

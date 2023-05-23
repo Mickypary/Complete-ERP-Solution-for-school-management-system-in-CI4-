@@ -423,18 +423,18 @@ class Exam extends BaseController
         $sectionID = $this->request->getVar('section_id');
         $subjectID = $this->request->getVar('subject_id');
         $examID = $this->request->getVar('exam_id');
+        $typeID = $this->request->getVar('type_id');
 
         $this->data['branch_id'] = $branchID;
         $this->data['class_id'] = $classID;
         $this->data['section_id'] = $sectionID;
         $this->data['subject_id'] = $subjectID;
         $this->data['exam_id'] = $examID;
+        $this->data['type_id'] = $typeID;
         if (isset($_POST['search'])) {
             $this->data['timetable_detail'] = $this->exam_model->getTimetableDetail($classID, $sectionID, $examID, $subjectID);
 
             $this->data['student'] = $this->exam_model->getMarkAndStudent($branchID, $classID, $sectionID, $examID, $subjectID);
-            // print_r($this->data['timetable_detail']['mark_distribution']);
-            // die();
         }
 
         $this->data['sub_page'] = 'exam/marks_register';
@@ -450,7 +450,7 @@ class Exam extends BaseController
             return redirect()->to(base_url().'authentication');
         }
 
-        if ($_POST) {
+        if ($this->request->getMethod() == 'post') {
             if (!get_permission('exam_mark', 'is_add')) {
                 ajax_access_denied();
             }
@@ -468,12 +468,22 @@ class Exam extends BaseController
                 $sectionID = $this->request->getVar('section_id');
                 $subjectID = $this->request->getVar('subject_id');
                 $examID = $this->request->getVar('exam_id');
+                $typeID = $this->request->getVar('type_id');
                 $inputMarks = $this->request->getVar('mark');
+                $pary = $this->request->getVar('pary');
+                // print_r($pary);
                 foreach ($inputMarks as $key => $value) {
                     $assMark = array();
+                    $sum = array();
+                    foreach ($value['sum'] as $i => $row1) {
+                        $sum[$i] = $row1;
+                    }
+
                     foreach ($value['assessment'] as $i => $row) {
                         $assMark[$i] = $row;
+                        
                     }
+                    
                     $arrayMarks = array(
                         'student_id' => $value['student_id'],
                         'exam_id' => $examID,
@@ -481,16 +491,25 @@ class Exam extends BaseController
                         'section_id' => $sectionID,
                         'subject_id' => $subjectID,
                         'branch_id' => $branchID,
+                        'type_id' => $typeID,
                         'session_id' => get_session_id(),
                     );
                     $inputMark = (isset($value['absent']) ? null : json_encode($assMark));
+                    $totalMark = (isset($value['absent']) ? null : json_encode($sum));
                     $absent = (isset($value['absent']) ? 'on' : '');
                     $query = $this->db->table('mark')->getWhere($arrayMarks);
+                    // print_r($sum);
+                    // die();
                     if ($query->getNumRows() > 0) {
-                        $builder = $this->db->table('mark')->where('id', $query->getrow()->id);
-                        $builder->update(array('mark' => $inputMark, 'absent' => $absent));
+                        $builder = $this->db->table('mark')->where('id', $query->getRow()->id);
+                        if ($absent) {
+                            $this->db->table('mark')->where('id', $query->getRow()->id)->delete();
+                        }
+                        $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
+                        // header("Refresh:0");
                     } else {
                         $arrayMarks['mark'] = $inputMark;
+                        $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
                         // send exam results sms
@@ -499,6 +518,7 @@ class Exam extends BaseController
                 }
                 $message = translate('information_has_been_saved_successfully');
                 $array = array('status' => 'success', 'message' => $message);
+                // return redirect()->to(current_url());
             } else {
                 $error = $this->validation->getErrors();
                 $array = array('status' => 'fail', 'error' => $error);
@@ -665,7 +685,7 @@ class Exam extends BaseController
             $this->data['print_date'] = $this->request->getVar('print_date');
             $this->data['examID'] = $this->request->getVar('exam_id');
             $this->data['sessionID'] = $this->request->getVar('session_id');
-            return view('exam/reportCard', $this->data, true);
+            return view('exam/reportCard', $this->data);
         }
     }
 

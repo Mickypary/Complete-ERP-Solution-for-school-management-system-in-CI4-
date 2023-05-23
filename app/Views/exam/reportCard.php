@@ -35,65 +35,77 @@ if (count($student_array)) {
 		$getMarksList = $result['exam'];
 
 		$getExam = $this->db->table('exam')->where(array('id' => $examID))->get()->getRowArray();
+		// print_r($getExam);
+		// exit();
 		$getSchool = $this->db->table('branch')->where(array('id' => $getExam['branch_id']))->get()->getRowArray();
 		$schoolYear = get_type_name_by_id('schoolyear', $sessionID, 'school_year');
 		?>
-	<div class="mark-container">
-		<table border="0" style="margin-top: 20px; height: 100px;">
+	<div  class="mark-container" style="font-size: 25px; font-family:georgia,garamond,serif; border: 5px solid #0f2df7;">
+		<table cellpadding="10" border="1" bordercolor="#0f2df7" style="margin-top: 20px; height: 100px; border-width: thin; border-color: #0f2df7;">
 			<tbody>
 				<tr>
-				<td style="width:40%;vertical-align: top;"><img style="max-width:225px;" src="<?php echo base_url('public/uploads/app_image/report-card-logo.png');?>"></td>
-				<td style="width:60%;vertical-align: top;">
-					<table align="right" class="table-head text-right" >
-						<tbody>
-							<tr><th style="font-size: 26px;" class="text-right"><?=$getSchool['school_name']?></th></tr>
-							<tr><th style="font-size: 14px; padding-top: 4px;" class="text-right">Academic Session : <?=$schoolYear?></th></tr>
-							<tr><td><?=$getSchool['address']?></td></tr>
-							<tr><td><?=$getSchool['mobileno']?></td></tr>
-							<tr><td><?=$getSchool['email']?></td></tr>
+				<td valign="middle" style="width:20%;vertical-align: middle; text-align: center;"><img style="max-width:100px; text-align: center;" src="<?php echo base_url('public/uploads/app_image/report-card-logo.png');?>"></td>
+				<td style="width:80%;vertical-align: top;">
+					<table cellpadding="5" align="center" class="table-head text-right" style="margin-top: 30px;" >
+						<tbody style="">
+							<tr><th valign="middle" style="font-size: 40px; text-align: center;" class="text-right"><?=$getSchool['school_name']?></th></tr>
+							<tr><th valign="middle" style="font-size: 20px; padding-top: 4px; text-align: center;" class="text-right">Academic Session : <?=$schoolYear?></th></tr>
+							<tr><td valign="middle" style="font-size: 20px; text-align: center"><?=$getSchool['address']?></td></tr>
+							<tr><td valign="middle" style="font-size: 20px; text-align: center;"><?=$getSchool['mobileno']?></td></tr>
+							<tr><td valign="middle" style="font-size: 20px; text-align: center;"><?=$getSchool['email']?></td></tr>
 						</tbody>
+
 					</table>
+					
+				</td>
+				<td>
+					<?php $path =  basename(base_url('public/uploads/images/student/'. $student['photo'] ));?>
+					<?php if($student['photo'] ==  $path):?>
+					<img style="max-width:225px; text-align: center;" src="<?php echo base_url('public/uploads/images/student/'. $student['photo']);?>">
+				<?php else: ?>
+					<img style="max-width:225px; text-align: center;" src="<?php echo base_url('public/uploads/images/student/defualt.jpg');?>">
+				<?php endif;  ?>
 				</td>
 				</tr>
 			</tbody>
 		</table>
-		<table class="table table-bordered" style="margin-top: 20px;">
+		<table cellpadding="10" border="1" bordercolor="#0f2df7" class="table table-bordered" style="margin-top: 20px; font-family:georgia,garamond,serif; font-size: 20px; border-width: thin; border-color: #0f2df7;">
 			<tbody>
 				<tr>
-					<th>Name</td>
+					<th align="left">Name</td>
 					<td><?=$student['first_name'] . " " . $student['last_name']?></td>
-					<th>Register No</td>
+					<th align="left">Register No</td>
 					<td><?=$student['register_no']?></td>
-					<th>Roll Number</td>
+					<th align="left">Roll Number</td>
 					<td><?=$student['roll']?></td>
 				</tr>
 				<tr>
-					<th>Father Name</td>
+					<th align="left">Father Name</td>
 					<td><?=$student['father_name']?></td>
-					<th>Admission Date</td>
+					<th align="left">Admission Date</td>
 					<td><?=_d($student['admission_date'])?></td>
-					<th>Date of Birth</td>
+					<th align="left">Date of Birth</td>
 					<td><?=_d($student['birthday'])?></td>
 				</tr>
 				<tr>
-					<th>Mother Name</td>
+					<th align="left">Mother Name</td>
 					<td><?=$student['mother_name']?></td>
-					<th>Class</td>
+					<th align="left">Class</td>
 					<td><?=$student['class_name'] . " (" . $student['section_name'] . ")"?></td>
-					<th>Gender</td>
+					<th align="left">Gender</td>
 					<td><?=ucfirst($student['gender'])?></td>
 				</tr>
 			</tbody>
 		</table>
-		<table class="table table-condensed table-bordered mt-lg">
+		<table cellpadding="10" border="1" bordercolor="#0f2df7" class="table table-condensed table-bordered mt-lg" style="font-family:georgia,garamond,serif; font-size: 16px; border: 1px solid #0f2df7;">
 			<thead>
 				<tr>
-					<th>Subjects</th>
+					<th align="left"><?= strtoupper('Subjects') ?></th>
 				<?php 
 				$markDistribution = json_decode($getExam['mark_distribution'], true);
 				foreach ($markDistribution as $id) {
 					?>
-					<th><?php echo get_type_name_by_id('exam_mark_distribution',$id)  ?></th>
+					<th align="left"><?php echo strtoupper(get_type_name_by_id('exam_mark_distribution',$id))  ?></th>
 				<?php } ?>
 				<?php if ($getExam['type_id'] == 1) { ?>
 					<th>Total</th>
@@ -101,9 +113,14 @@ if (count($student_array)) {
 					<th>Grade</th>
 					<th>Point</th>
 				<?php } elseif ($getExam['type_id'] == 3) { ?>
-					<th>Total</th>
-					<th>Grade</th>
-					<th>Point</th>
+					<th align="left"><?= strtoupper('Total') ?></th>
+					<th align="left"><?= strtoupper('Grade') ?></th>
+					<th align="left"><?= strtoupper('Point') ?></th>
+				<?php } elseif($getExam['type_id'] == 4) { ?>
+					<th align="left"><?= strtoupper('MidTerm') ?></th>
+					<th align="left"><?= strtoupper('Total') ?></th>
+					<th align="left"><?= strtoupper('Grade') ?></th>
+					<th align="left"><?= strtoupper('Point') ?></th>
 				<?php } ?>
 				</tr>
 			</thead>
@@ -117,21 +134,21 @@ if (count($student_array)) {
 			foreach ($getMarksList as $row) {
 			?>
 				<tr>
-					<td valign="middle" width="35%"><?=$row['subject_name']?></td>
+					<td valign="middle" width="35%"><?= strtoupper($row['subject_name'])?></td>
 				<?php 
 				$total_obtain_marks = 0;
 				$total_full_marks = 0;
 				$fullMarkDistribution = json_decode($row['mark_distribution'], true);
 				$obtainedMark = json_decode($row['get_mark'], true);
 				foreach ($fullMarkDistribution as $i => $val) {
-					$obtained_mark = floatval($obtainedMark[$i]);
+					$obtained_mark = isset($obtainedMark[$i]) ? floatval($obtainedMark[$i]) : '';
 					$fullMark = floatval($val['full_mark']);
 					$passMark = floatval($val['pass_mark']);
 					if ($obtained_mark < $passMark) {
 						$result_status = 0;
 					}
 
-					$total_obtain_marks += $obtained_mark;
+					$total_obtain_marks += isset($obtained_mark) ? intval($obtained_mark) : 0;
 					$obtained = $row['get_abs'] == 'on' ? 'Absent' : $obtained_mark;
 					$total_full_marks += $fullMark;
 					?>
@@ -141,7 +158,8 @@ if (count($student_array)) {
 							if ($row['get_abs'] == 'on') {
 								echo 'Absent';
 							} else {
-								echo $obtained_mark . '/' . $fullMark;
+								echo $obtained_mark;
+								// echo $obtained_mark . '/' . $fullMark;
 							}
 						?>
 					</td>
@@ -157,13 +175,24 @@ if (count($student_array)) {
 							}
 						?>
 					</td>
-				<?php } ?>
+				<?php } if ($getExam['type_id'] == 4){ ?>
+					<td valign="middle">
+						<?php 
+							if ($row['get_abs'] == 'on') {
+								echo 'Absent';
+							} else {
+								echo $obtained_mark;
+								// echo $obtained_mark . '/' . $fullMark;
+							}
+						?>
+					</td>
 				<?php
+				}
 				}
 				$grand_obtain_marks += $total_obtain_marks;
 				$grand_full_marks += $total_full_marks;
 				?>
-				<?php if($getExam['type_id'] == 1 || $getExam['type_id'] == 3) { ?>
+				<?php if($getExam['type_id'] == 1 || $getExam['type_id'] == 3 || $getExam['type_id'] == 4) { ?>
 					<td valign="middle"><?=$total_obtain_marks . "/" . $total_full_marks?></td>
 				<?php } if($getExam['type_id'] == 2) { 
 					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
@@ -176,13 +205,22 @@ if (count($student_array)) {
 					$colspan += 2;
 					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
-					$total_grade_point += $grade['grade_point'];
+					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
-					<td valign="middle"><?=$grade['name']?></td>
-					<td valign="middle"><?=number_format($grade['grade_point'], 2, '.', '')?></td>
-				<?php } ?>
+					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
+				<?php } if($getExam['type_id'] == 4) { 
+					$colspan += 2;
+					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
+					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
+					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
+					?>
+					<td valign="middle"><?=$total_obtain_marks . "/" . $total_full_marks?></td>
+					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
+
 				</tr>
-			<?php } ?>
+			<?php } }?>
 			<?php if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3) { ?>
 				<tr class="text-weight-semibold">
 					<td valign="top" >GRAND TOTAL :</td>
@@ -202,12 +240,12 @@ if (count($student_array)) {
 					<td valign="top" >GPA :</td>
 					<td valign="top" colspan="<?=$colspan+1?>"><?=number_format(($total_grade_point / count($getMarksList)), 2, '.', '')?></td>
 				</tr>
-			<?php } if ($getExam['type_id'] == 3) { ?>
+			<?php } if ($getExam['type_id'] == 3 || $getExam['type_id'] == 4 ) { ?>
 				<tr class="text-weight-semibold">
 					<td valign="top" >GPA :</td>
 					<td valign="top" colspan="<?=$colspan?>"><?=number_format(($total_grade_point / count($getMarksList)), 2, '.', '')?></td>
 				</tr>
-			<?php } if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3) { ?>
+			<?php } if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3 || $getExam['type_id'] == 4) { ?>
 				<tr class="text-weight-semibold">
 					<td valign="top" >RESULT :</td>
 					<td valign="top" colspan="<?=$colspan?>"><?=$result_status == 0 ? 'Fail' : 'Pass'; ?></td>
@@ -216,7 +254,7 @@ if (count($student_array)) {
 			</tbody>
 		</table>
 		
-		<div style="width: 100%; display: flex;">
+		<div style="width: 100%; display: flex; border-width: thick; border-color: blueviolet !important;">
 			<div style="width: 50%; padding-right: 15px;">
 				<?php
 				if ($attendance == true) {
@@ -225,7 +263,7 @@ if (count($student_array)) {
 					$getTotalAttendance = $this->db->table('student_attendance')->where(array('student_id' => $studentID, 'status' => 'P', 'year(date)' => $year[0]))->get()->getNumRows();
 					$attenPercentage = empty($getTotalWorking) ? '0.00' : ($getTotalAttendance * 100) / $getTotalWorking;
 					?>
-				<table class="table table-bordered table-condensed">
+				<table cellpadding=10 border="1" bordercolor="#0f2df7" class="table table-bordered table-condensed">
 					<tbody>
 						<tr>
 							<th colspan="2" class="text-center">Attendance</th>
@@ -251,7 +289,7 @@ if (count($student_array)) {
 		if ($getExam['type_id'] != 1) {
 			?>
 			<div style="width: 50%; padding-left: 15px;">
-				<table class="table table-condensed table-bordered">
+				<table cellpadding="5" border="1" bordercolor="#0f2df7" class="table table-condensed table-bordered">
 					<tbody>
 						<tr>
 							<th colspan="3" class="text-center">Grading Scale</th>
@@ -278,8 +316,9 @@ if (count($student_array)) {
 		</div>
 	<?php if (!empty($remarks_array[$sc])) { ?>
 		<div style="width: 100%;">
-			<table class="table table-condensed table-bordered">
+			<table cellpadding="5" border="1" bordercolor="#0f2df7" class="table table-condensed table-bordered" style="font-family:georgia,garamond,serif;">
 				<tbody>
+					<br>
 					<tr>
 						<th style="width: 250px;">Remarks</th>
 						<td><?=$remarks_array[$sc]?></td>
@@ -299,5 +338,6 @@ if (count($student_array)) {
 			</tbody>
 		</table>
 	</div>
+
 	<div class="pagebreak"> </div> 
 <?php } } ?>

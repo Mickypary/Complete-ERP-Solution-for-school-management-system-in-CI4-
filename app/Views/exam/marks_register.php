@@ -1,10 +1,14 @@
 <?php
 use App\Libraries\App_lib;
 use App\Models\ApplicationModel;
+use App\Models\ExamModel;
 
 $this->app_lib = new App_lib();
 $this->application_model = new ApplicationModel();
 $this->db = \Config\Database::connect();
+$this->exam_model = new ExamModel();
+
+// $getExam = $this->db->table('exam')->where(array('id' => $examID))->get()->getRowArray();
 
 ?>
 
@@ -51,7 +55,29 @@ $this->db = \Config\Database::connect();
 							?>
 						</div>
 					</div>
-					<div class="col-md-3 mb-sm">
+					<div class="col-md-2 mb-sm">
+						<div class="form-group">
+							<label class="control-label"><?=translate('exam_type')?> <span class="required">*</span></label>
+							<?php
+								// $arrayClass = $this->app_lib->getExamType($branch_id);
+							$arrayType = array("" => translate('select'));
+								$builder = $this->db->table('exam');
+                				$result = $builder->get()->getResult();
+                				// print_r($result);
+                				foreach ($result as $row){
+										// $arrayType[$row->id] = $row->type_id;
+										if ($row->type_id == 4) {
+											$arrayType[$row->type_id] = 'End Of Term';
+										}elseif($row->type_id == 3) {
+											$arrayType[$row->type_id] = 'Mark and GPA';
+										}
+									}
+								echo form_dropdown("type_id", $arrayType, set_value('type_id'), "class='form-control' 
+								required data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");
+							?>
+						</div>
+					</div>
+					<div class="col-md-2 mb-sm">
 						<div class="form-group">
 							<label class="control-label"><?=translate('class')?> <span class="required">*</span></label>
 							<?php
@@ -71,7 +97,7 @@ $this->db = \Config\Database::connect();
 							?>
 						</div>
 					</div>
-					<div class="col-md-3">
+					<div class="col-md-2">
 						<div class="form-group">
 							<label class="control-label"><?=translate('subject')?> <span class="required">*</span></label>
 							<?php
@@ -104,14 +130,15 @@ $this->db = \Config\Database::connect();
 		<?php if (isset($student)): ?>
 
 		<section class="panel appear-animation" data-appear-animation="<?php echo $global_config['animations'];?>" data-appear-animation-delay="100">
-			<?php echo form_open('exam/mark_save', array('class' => 'frm-submit-msg'));
+			<?php echo form_open('exam/mark_save', array('class' => 'frm-submit-msg', 'id' => 'myForm'));
 				$data = array(
 					'class_id' => $class_id,
 					'section_id' => $section_id,
 					'exam_id' => $exam_id,
 					'subject_id' => $subject_id,
 					'session_id' => get_session_id(),
-					'branch_id' => $branch_id
+					'branch_id' => $branch_id,
+					'type_id' => $type_id,
 				);
 				echo form_hidden($data);
 			?>
@@ -137,12 +164,31 @@ $this->db = \Config\Database::connect();
 							// die();
 							foreach ($distributions as $i => $value) {
 								?>
-								<th><?php echo get_type_name_by_id('exam_mark_distribution', $i) . " (" . $value['full_mark'] . ")" ?></th>
+								<th><?php echo strtoupper(get_type_name_by_id('exam_mark_distribution', $i)) . " (" . $value['full_mark'] . ")" ?></th>
 							<?php } ?>
+							<th><?= strtoupper(translate('total')); ?></th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php $count = 1; foreach ($student as $key => $row): ?>
+
+							<?php
+							$studentID = $row['student_id'];
+							$sessionID = get_session_id();
+
+							$result = $this->exam_model->getStudentReportCard($studentID, $exam_id, $sessionID);
+							$student = $result['student'];
+							$getMarksList = $result['exam'];
+							// print_r($getMarksList);
+							$obtainedMark = json_decode($row['get_mark'], true);
+							// print_r($obtainedMark);
+
+							?>
+
+
+
+
+
 							<tr>
 								<input type="hidden" name="mark[<?=$key?>][student_id]" value="<?=$row['student_id']?>">
 								<td><?php echo $count++; ?></td>
@@ -157,8 +203,32 @@ $this->db = \Config\Database::connect();
 								</td>
 								<?php
 								$getDetails = json_decode($row['get_mark'], true);
+								// $getTotal = json_decode($row['get_total'], true);
+
+								$total_obtain_marks = 0;
+								$total_full_marks = 0;
+								$grand_obtain_marks = 0;
+
+								$total_grade_point = 0;
+								$grand_full_marks = 0;
+
+								$sum = 0;
 								foreach ($distributions as $id => $ass) {
-									$existMark = isset($getDetails[$id]) ? $getDetails[$id]  : '';
+									// print_r($getDetails[$id]);
+								// die();
+
+									$fullMark = floatval($ass['full_mark']);
+									$passMark = floatval($ass['pass_mark']);
+
+
+
+
+									$existMark = isset($getDetails[$id]) ? floatval($getDetails[$id])  : '';
+
+									$total_obtain_marks += intval($existMark);
+									$total_full_marks += $fullMark;
+									// print_r($existMark);
+
 									?>
 								<td class="min-w-sm">
 									<div class="form-group">
@@ -167,6 +237,19 @@ $this->db = \Config\Database::connect();
 									</div>
 								</td>
 								<?php } ?>
+
+								<?php
+									$grand_obtain_marks += $total_obtain_marks;
+									$grand_full_marks += $total_full_marks;
+								?>
+
+								<td>
+									<div class="form-group">
+										<input type="hidden" class="form-control" autocomplete="off" name="mark[<?=$key?>][sum][4]" id="mark[]"  value="<?= $total_obtain_marks ?>"><?= $total_obtain_marks ?>
+										<span class="error"></span>
+									</div>
+								</td>
+
 							</tr>
 							<?php endforeach; ?>
 						</tbody>
@@ -177,7 +260,7 @@ $this->db = \Config\Database::connect();
 			<div class="panel-footer">
 				<div class="row">
 					<div class="col-md-offset-10 col-md-2">
-						<button type="submit" class="btn btn-default btn-block" data-loading-text="<i class='fas fa-spinner fa-spin'></i> Processing">
+						<button type="submit" id="pary" name="save" value="1" class="btn btn-default btn-block" data-loading-text="<i class='fas fa-spinner fa-spin'></i> Processing">
 							<i class="fas fa-plus-circle"></i> <?=translate('save')?>
 						</button>
 					</div>
@@ -213,5 +296,32 @@ $this->db = \Config\Database::connect();
 				}
 			});
 		});
+
+
+		$('#pary').on('click', function(e) {
+
+			var pary = $('#mark[]').val();
+			var micky = 'Gbemi';
+
+			$.ajax({
+				url: base_url + 'exam/mark_save',
+				type: 'POST',
+				data: {
+					pary: pary,
+					gbemi: micky,
+				},
+				success: function(data) {
+					$('#mark[sum][4]').html(data);
+				}
+			});
+
+		})
+
+
+
+
+
+
+
 	});
-</script>	
+</script>

@@ -54,7 +54,10 @@ $this->db = \Config\Database::connect();
 								echo translate('grade');
 							} elseif ($row['type_id'] == 3) {
 								echo translate('marks_and_grade');
+							} elseif($row['type_id'] == 4) {
+								echo translate('midTerm');
 							}
+
 							 ?></td>
 							<td><?php echo (empty($row['term_id']) ? 'N/A' : get_type_name_by_id('exam_term', $row['term_id'])); ?></td>
 							<td><?php
@@ -126,6 +129,7 @@ $this->db = \Config\Database::connect();
 										'1' => translate('marks'), 
 										'2' => translate('grade'), 
 										'3' => translate('marks_and_grade'), 
+										'4' => translate('midTerm'), 
 									);
 									echo form_dropdown("type_id", $arrayType, set_value('type_id'), "class='form-control' id='type_id'
 									data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");

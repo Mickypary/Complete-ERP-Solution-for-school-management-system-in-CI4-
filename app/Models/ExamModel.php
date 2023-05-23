@@ -161,7 +161,7 @@ class ExamModel extends Model
 
     public function getMarkAndStudent($branchID, $classID, $sectionID, $examID, $subjectID)
     {
-        $builder = $this->db->table('enroll as en')->select('en.*,st.first_name,st.last_name,st.register_no,st.category_id,m.mark as get_mark,IFNULL(m.absent, 0) as get_abs,subject.name as subject_name')
+        $builder = $this->db->table('enroll as en')->select('en.*,st.first_name,st.last_name,st.register_no,st.category_id,m.mark as get_mark,m.total as get_total,IFNULL(m.absent, 0) as get_abs,subject.name as subject_name')
         ->join('student as st', 'st.id = en.student_id', 'inner')
         ->join('mark as m', 'm.student_id = en.student_id and m.class_id = en.class_id and m.section_id = en.section_id and m.exam_id = ' . $this->db->escape($examID) . ' and m.subject_id = ' . $this->db->escape($subjectID), 'left')
         ->join('subject', 'subject.id = m.subject_id', 'left')
@@ -191,7 +191,7 @@ class ExamModel extends Model
         ->where('m.exam_id', $examID)
         ->where('m.student_id', $studentID)
         ->where('m.session_id', $sessionID);
-        $result['exam'] = $this->db->get()->getResultArray();
+        $result['exam'] = $builder->get()->getResultArray();
 
         return $result;
     }

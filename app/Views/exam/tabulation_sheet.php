@@ -73,28 +73,27 @@ $branch = $this->db->table('branch')->where('id',$branch_id)->get()->getRowArray
 
 					<div class="col-md-2 mb-sm">
 						<div class="form-group">
-							<label class="control-label"><?=translate('exam_type')?> <span class="required">*</span></label>
+							<label class="control-label"><?=translate('exam_type_rel')?> <span class="required">*</span></label>
 							<?php
 								// $arrayClass = $this->app_lib->getExamType($branch_id);
-							$arrayType = array("" => translate('select'));
+							$arrayTypes = array("" => translate('select'));
 								$builder = $this->db->table('exam');
                 				$result = $builder->get()->getResult();
                 				// print_r($result);
                 				foreach ($result as $row){
 										// $arrayType[$row->id] = $row->type_id;
 										if ($row->type_id == 4) {
-											$arrayType[$row->type_id] = 'End Of Xmas Term';
+											$arrayTypes[$row->type_id] = 'End Of Xmas Term';
 
 										}elseif($row->type_id == 3) {
-											// $arrayType[$row->type_id] = 'Mark and GPA';
-											$arrayType[$row->type_id] = 'Mid';
+											$arrayTypes[$row->type_id] = 'Mid';
 										}elseif($row->type_id == 5) {
-											$arrayType[$row->type_id] = 'End Of Lent Term';
+											$arrayTypes[$row->type_id] = 'End Of Lent Term';
 										}elseif ($row->type_id == 6) {
-											$arrayType[$row->type_id] = 'End Of 3rd Term';
+											$arrayTypes[$row->type_id] = 'End Of 3rd Term';
 										}
 									}
-								echo form_dropdown("type_id", $arrayType, set_value('type_id'), "class='form-control' 
+								echo form_dropdown("type_rel_id", $arrayTypes, set_value('type_rel_id'), "class='form-control' 
 								required data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");
 							?>
 						</div>
@@ -165,18 +164,10 @@ $branch = $this->db->table('branch')->where('id',$branch_id)->get()->getRowArray
 										<td><?=translate('students')?></td>
 										<td><?=translate('roll')?></td>
                                         <?php
-                                            if ($type_id == 3) {
-                                            	foreach($get_subjects as $subject){
+                                            foreach($get_subjects as $subject){
                                             	$fullMark = array_sum(array_column(json_decode($subject['mark_distribution'], true), 'full_mark'));
                                                 echo '<td>' . $subject['subject_name'] . " (" . $fullMark . ')</td>';
-                                            	}
-                                            }else {
-                                            	foreach($get_subjects as $subject){
-                                            	$fullMark = array_sum(array_column(json_decode($subject['mark_distribution'], true), 'full_mark'));
-                                                echo '<td>' . $subject['subject_name'] . " (" . $fullMark+20 . ')</td>';
-                                            	}
                                             }
-                                            print_r($type_id);
                                         ?>
 										<td><?=translate('total_marks')?></td>
 										<td>GPA</td>
@@ -208,46 +199,56 @@ $branch = $this->db->table('branch')->where('id',$branch_id)->get()->getRowArray
 										$totalGradePoint 	= 0;
 										$grand_result 		= 0;
 										$unset_subject 		= 0;
+
+										$grand_obtain_marks = 0;
+										$grand_obtain_mid = 0;
 										foreach ($get_subjects as $subject):
 											$result_status = 1;
 											?>
 										<td>
 										<?php
-											$builder = $this->db->table('mark')->where(array(
-												'class_id' 	 => set_value('class_id'),
-												'exam_id'	 => set_value('exam_id'),
-												'type_id'	 => set_value('type_id'),
-												'subject_id' => $subject['subject_id'],
-												'student_id' => $enroll['student_id'],
-												'session_id' => set_value('session_id')
+											$builder = $this->db->table('mark as m')->select('m.*, mr.*')
+											->join('mark_rel as mr', 'mr.student_id = m.student_id and mr.subject_id = m.subject_id', 'left')
+											->where(array(
+												'm.class_id' 	 => set_value('class_id'),
+												'm.exam_id'	 => set_value('exam_id'),
+												'm.subject_id' => $subject['subject_id'],
+												'm.student_id' => $enroll['student_id'],
+												'm.session_id' => set_value('session_id'),
+												'm.type_id' => set_value('type_rel_id'),
 											));
 											$getMark = $builder->get()->getRowArray();
-											// print_r($getMark);
-											// die();
 											if (!empty($getMark)) {
 												if ($getMark['absent'] != 'on') {
 													$totalObtained = 0;
 													$totalObtainedMid = 0;
+													$total_obtain_marks = 0;
+													$total_obtain_mid = 0;
 													$totalFullMark = 0;
 													$fullMarkDistribution = json_decode($subject['mark_distribution'], true);
 													$obtainedMark = json_decode($getMark['mark'], true);
-													$obtainedMid = json_decode($getMark['mark_mid'], true);
+													$obtainedMidMark = json_decode($getMark['mark_mid'], true);
+													print_r($obtainedMark);
 													foreach ($fullMarkDistribution as $i => $val) {
 														$obtained_mark = floatval($obtainedMark[$i]);
-														$obtained_mid = floatval($obtainedMid[$i]);
+														$obtained_mid_mark = floatval($obtainedMidMark[$i]);
 														$totalObtained += $obtained_mark;
-														$totalObtainedMid += $obtained_mid;
+														$totalObtainedMid += $obtained_mid_mark;
 														$totalFullMark += $val['full_mark'];
 														$passMark = floatval($val['pass_mark']);
 														if ($obtained_mark < $passMark) {
 															$result_status = 0;
 														}
-													}
-													// echo ($totalObtained . "/" . $totalFullMark);
-													if ($type_id == 3) {
-														echo ($totalObtained . "/" . $totalFullMark);
-													}else {
-														echo (($totalObtained) . "/" . $totalFullMark+20);
+														
+														$total_obtain_marks += isset($obtained_mark) ? intval($obtained_mark) : 0;
+														// $total_obtain_mid += isset($obtained_mid_mark) ? floatval(intval($obtained_mid_mark) * 0.2) : 0;
+													} // End Foreach for $fullMarkDist
+
+													$grand_obtain_marks += $total_obtain_marks;
+
+													echo ($total_obtain_marks  . "/" . $totalFullMark);
+													if ($type_rel_id == 4 || $type_rel_id == 5) {
+														echo (($total_obtain_marks + 5)  . "/" . $totalFullMark);
 													}
 													if ($totalObtained != 0 && !empty($totalObtained)) {
 														$grade = $this->exam_model->get_grade($totalObtained, $branch_id);
@@ -265,15 +266,7 @@ $branch = $this->db->table('branch')->where('id',$branch_id)->get()->getRowArray
 										?>
 										</td>
 										<?php endforeach; ?>
-										<!-- <td><?php echo ($totalMarks . '/' . $totalFullmarks); ?></td> -->
-										<?php
-										if ($type_id == 3): ?>
-											<td><?php echo ($totalMarks . '/' . $totalFullmarks); ?></td>
-										<?php else:?>
-										<td><?php echo ($totalMarks . '/' . $totalFullmarks+40); ?></td>
-										<?php endif; ?>
-
-
+										<td><?php echo ($totalMarks . '/' . $totalFullmarks); ?></td>
 										<td>
 											<?php
 											$totalSubjects = count($get_subjects);
@@ -297,7 +290,7 @@ $branch = $this->db->table('branch')->where('id',$branch_id)->get()->getRowArray
 									<?php
 									endforeach;
 									}else{
-										$colspan = ($get_subjects->num_rows() + 5);
+										$colspan = ($get_subjects->getNumRows() + 5);
 										echo '<tr><td colspan="' . $colspan . '"><h5 class="text-danger text-center">' . translate('no_information_available') . '</td></tr>';
 									}
 									?>

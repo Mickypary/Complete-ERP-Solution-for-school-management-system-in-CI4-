@@ -250,7 +250,7 @@ if (count($student_array)) {
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
 
 				</tr>
-			<?php } if($getExam['type_id'] == 5) { 
+			<?php } if($getExam['type_id'] == 5 || $getExam['type_id'] == 6) { 
 					$colspan += 2;
 					$percentage_grade = ($total_obtain_marks + number_format($total_obtain_mid,0)) / ($total_full_marks) *100;
 

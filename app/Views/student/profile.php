@@ -658,7 +658,7 @@ $previous_details = json_decode($student['previous_details'], true);
 										<th>Total</th>
 										<th>Grade</th>
 										<th>Point</th>
-									<?php } elseif($getExam['type_id'] == 4 || $getExam['type_id'] == 5) { ?>
+									<?php } elseif($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6) { ?>
 										<th align="left"><?= strtoupper('MidTerm') ?></th>	
 										<th align="left"><?= strtoupper('Total') ?></th>					
 										<th align="left"><?= strtoupper('Grade') ?></th>
@@ -727,7 +727,7 @@ $previous_details = json_decode($student['previous_details'], true);
 												}
 											?>
 										</td>
-										<?php } if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5){ ?>
+										<?php } if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6){ ?>
 										<td valign="middle">
 											<?php 
 												if ($row['get_abs'] == 'on') {
@@ -781,7 +781,7 @@ $previous_details = json_decode($student['previous_details'], true);
 
 				</tr>
 
-				<?php } if($getExam['type_id'] == 5) { 
+				<?php } if($getExam['type_id'] == 5 || $getExam['type_id'] == 6) { 
 					$colspan += 2;
 					$percentage_grade = ($total_obtain_marks + number_format($total_obtain_mid,0) - 20) / ($total_full_marks) *100;
 
@@ -838,7 +838,7 @@ $previous_details = json_decode($student['previous_details'], true);
 										?>
 									</td>
 								</tr>
-								<?php } if ($getExam['type_id'] == 5 ) { ?>
+								<?php } if ($getExam['type_id'] == 5 || $getExam['type_id'] == 6 ) { ?>
 								<tr class="text-weight-semibold">
 									<td valign="top" >GRAND TOTAL :</td>
 									<td valign="top" colspan="<?=$colspan?>"><?=($total_obtain_marks + $total_obtain_mid++) . '/' . $grand_full_marks +40; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / ($grand_full_marks+40); echo number_format($percentage, 2, '.', '')?>%</td>

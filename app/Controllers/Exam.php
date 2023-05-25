@@ -814,8 +814,10 @@ class Exam extends BaseController
             $sectionID = $this->request->getVar('section_id');
             $examID = $this->request->getVar('exam_id');
             $sessionID = $this->request->getVar('session_id');
+            $typeRelID = $this->request->getVar('type_rel_id');
             $this->data['get_subjects'] = $this->exam_model->getSubjectList($examID, $classID, $sectionID, $sessionID);
         }
+        $this->data['type_rel_id'] = $typeRelID;
         $this->data['title'] = translate('tabulation_sheet');
         $this->data['sub_page'] = 'exam/tabulation_sheet';
         $this->data['main_menu'] = 'exam_reports';

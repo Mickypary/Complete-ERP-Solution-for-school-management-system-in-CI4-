@@ -185,8 +185,9 @@ class ExamModel extends Model
         ->where('enroll.student_id', $studentID);
         $result['student'] = $builder->get()->getRowArray();
 
-        $builder = $this->db->table('mark as m')->select('m.mark as get_mark,m.mark_mid as mark_mid,IFNULL(m.absent, 0) as get_abs,subject.name as subject_name, te.mark_distribution')
+        $builder = $this->db->table('mark as m')->select('m.mark as get_mark,mr.mark_mid as mark_mid,IFNULL(m.absent, 0) as get_abs,subject.name as subject_name, te.mark_distribution')
         ->join('subject', 'subject.id = m.subject_id', 'left')
+        ->join('mark_rel as mr', 'mr.type_id = m.type_id and mr.subject_id = m.subject_id and m.student_id = mr.student_id', 'left')
         ->join('timetable_exam as te', 'te.exam_id = m.exam_id and te.class_id = m.class_id and te.section_id = m.section_id and te.subject_id = m.subject_id', 'left')
         ->where('m.exam_id', $examID)
         ->where('m.student_id', $studentID)

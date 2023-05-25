@@ -33,6 +33,7 @@ if (count($student_array)) {
 		$result = $this->exam_model->getStudentReportCard($studentID, $examID, $sessionID);
 		$student = $result['student'];
 		$getMarksList = $result['exam'];
+		// print_r($result['exam']);
 
 		$getExam = $this->db->table('exam')->where(array('id' => $examID))->get()->getRowArray();
 		// print_r($getExam);
@@ -116,7 +117,12 @@ if (count($student_array)) {
 					<th align="left"><?= strtoupper('Total') ?></th>
 					<th align="left"><?= strtoupper('Grade') ?></th>
 					<th align="left"><?= strtoupper('Point') ?></th>
-				<?php } elseif($getExam['type_id'] == 4) { ?>
+				<?php } elseif($getExam['type_id'] == 4 || $getExam['type_id'] == 5) { ?>
+					<th align="left"><?= strtoupper('MidTerm') ?></th>	
+					<th align="left"><?= strtoupper('Total') ?></th>					
+					<th align="left"><?= strtoupper('Grade') ?></th>
+					<th align="left"><?= strtoupper('Point') ?></th>
+				<?php } elseif($getExam['type_id'] == 6) { ?>
 					<th align="left"><?= strtoupper('MidTerm') ?></th>	
 					<th align="left"><?= strtoupper('Total') ?></th>					
 					<th align="left"><?= strtoupper('Grade') ?></th>
@@ -144,8 +150,9 @@ if (count($student_array)) {
 				$fullMarkDistribution = json_decode($row['mark_distribution'], true);
 				$obtainedMark = json_decode($row['get_mark'], true);
 				$obtainedMid = json_decode($row['mark_mid'], true);
+				// print_r($result['exam']);
 				foreach ($fullMarkDistribution as $i => $val) {
-					print_r($obtainedMid[$i]);
+					// print_r($obtainedMid[$i]);
 					$obtained_mark = isset($obtainedMark[$i]) ? floatval($obtainedMark[$i]) : '';
 					$obtained_mid = isset($obtainedMid[$i]) ? floatval($obtainedMid[$i]) : '';
 					$fullMark = floatval($val['full_mark']);
@@ -155,9 +162,10 @@ if (count($student_array)) {
 					}
 
 					$total_obtain_marks += isset($obtained_mark) ? intval($obtained_mark) : 0;
-					$total_obtain_mid += isset($obtained_mid) ? intval($obtained_mid * 0.2) : 0;
+					$total_obtain_mid += isset($obtained_mid) ? floatval(intval($obtained_mid) * 0.2) : 0;
 					$obtained = $row['get_abs'] == 'on' ? 'Absent' : $obtained_mark;
-					$total_full_marks += $fullMark;
+					$total_full_marks += ($fullMark);
+					// print_r($total_full_marks);
 					?>
 				<?php if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3){ ?>
 					<td valign="middle">
@@ -182,7 +190,7 @@ if (count($student_array)) {
 							}
 						?>
 					</td>
-				<?php } if ($getExam['type_id'] == 4){ ?>
+				<?php } if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6){ ?>
 					<td valign="middle">
 						<?php 
 							if ($row['get_abs'] == 'on') {
@@ -197,12 +205,13 @@ if (count($student_array)) {
 				}
 				}
 				$grand_obtain_marks += $total_obtain_marks;
-				$grand_obtain_mid += $total_obtain_mid;
-				$total_obtain_marks += $total_obtain_mid;
+				print_r($obtained_mid);
+				
 				$grand_full_marks += $total_full_marks;
 				?>
 				<?php if($getExam['type_id'] == 1 || $getExam['type_id'] == 3) { ?>
-					<td valign="middle"><?=$total_obtain_marks . "/" . $total_full_marks?></td>
+					<td valign="middle"><?=number_format($total_obtain_marks, 0) . "/" . $total_full_marks?></td>
+					<!-- <?php $total_obtain_marks += $total_obtain_mid; ?> -->
 				<?php } if($getExam['type_id'] == 2) { 
 					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
@@ -212,21 +221,46 @@ if (count($student_array)) {
 					<td valign="middle"><?=number_format($grade['grade_point'], 2, '.', '')?></td>
 				<?php } if ($getExam['type_id'] == 3) {
 					$colspan += 2;
-					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
+					// $percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
+					$percentage_grade = ($total_obtain_marks - number_format($total_obtain_mid,0)) / ($total_full_marks) *100;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
+					<?php
+					$grand_obtain_mid += $total_obtain_marks;
+					// $grand_obtain_mid += $total_obtain_mid;
+					$total_obtain_marks += $total_obtain_mid;
+
+					?>
+
 				<?php } if($getExam['type_id'] == 4) { 
 					$colspan += 2;
-					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
+					$percentage_grade = ($total_obtain_marks + number_format($total_obtain_mid,0)) / ($total_full_marks+20) *100;
+
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
+					// $grade = $this->exam_model->get_grade($total_obtain_marks+$total_obtain_mid, $getExam['branch_id']);
+					// print_r($grade);
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
-					<td valign="middle"><?=$total_obtain_marks . "/" . $total_full_marks?></td>
-					<!-- <td valign="middle"><?= print_r($row['mark_mid']); ?></td> -->
+					<td valign="middle"><?=number_format($total_obtain_marks + $total_obtain_mid,  0,) . "/" . ($total_full_marks + 20)?></td>
+					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
+
+				</tr>
+			<?php } if($getExam['type_id'] == 5) { 
+					$colspan += 2;
+					$percentage_grade = ($total_obtain_marks + number_format($total_obtain_mid,0)) / ($total_full_marks) *100;
+
+					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
+					// $grade = $this->exam_model->get_grade($total_obtain_marks+$total_obtain_mid, $getExam['branch_id']);
+					// print_r($grade);
+					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
+					?>
+					<td valign="middle"><?= $total_obtain_mid; ?></td>
+					<td valign="middle"><?=number_format($total_obtain_marks + $total_obtain_mid,  0,) . "/" . ($total_full_marks)?></td>
 					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
 
@@ -236,6 +270,34 @@ if (count($student_array)) {
 				<tr class="text-weight-semibold">
 					<td valign="top" >GRAND TOTAL :</td>
 					<td valign="top" colspan="<?=$colspan?>"><?=$grand_obtain_marks . '/' . $grand_full_marks; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
+				</tr>
+				<tr class="text-weight-semibold">
+					<td valign="top" >GRAND TOTAL IN WORDS :</td>
+					<td valign="top" colspan="<?=$colspan?>">
+						<?php
+						$f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+						echo ucwords($f->format($grand_obtain_marks));
+						?>
+					</td>
+				</tr>
+			<?php } if ($getExam['type_id'] == 4 ) { ?>
+				<tr class="text-weight-semibold">
+					<td valign="top" >GRAND TOTAL :</td>
+					<td valign="top" colspan="<?=$colspan?>"><?=($grand_obtain_marks+intval($obtained_mid)) . '/' . $grand_full_marks + 20; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
+				</tr>
+				<tr class="text-weight-semibold">
+					<td valign="top" >GRAND TOTAL IN WORDS :</td>
+					<td valign="top" colspan="<?=$colspan?>">
+						<?php
+						$f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+						echo ucwords($f->format($grand_obtain_marks));
+						?>
+					</td>
+				</tr>
+			<?php } if ($getExam['type_id'] == 5 ) { ?>
+				<tr class="text-weight-semibold">
+					<td valign="top" >GRAND TOTAL :</td>
+					<td valign="top" colspan="<?=$colspan?>"><?=($grand_obtain_marks+intval($obtained_mid)) . '/' . $grand_full_marks + 20; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
 				</tr>
 				<tr class="text-weight-semibold">
 					<td valign="top" >GRAND TOTAL IN WORDS :</td>

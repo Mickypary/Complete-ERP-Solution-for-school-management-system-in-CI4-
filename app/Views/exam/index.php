@@ -53,9 +53,13 @@ $this->db = \Config\Database::connect();
 							} elseif ($row['type_id'] == 2) {
 								echo translate('grade');
 							} elseif ($row['type_id'] == 3) {
-								echo translate('marks_and_grade');
+								echo translate('Mid');
 							} elseif($row['type_id'] == 4) {
-								echo translate('midTerm');
+								echo translate('XmasTerm');
+							} elseif($row['type_id'] == 5) {
+								echo translate('LentTerm');
+							} elseif($row['type_id'] == 6) {
+								echo translate('SummerTerm');
 							}
 
 							 ?></td>
@@ -128,8 +132,10 @@ $this->db = \Config\Database::connect();
 										'' => translate('select'), 
 										'1' => translate('marks'), 
 										'2' => translate('grade'), 
-										'3' => translate('marks_and_grade'), 
-										'4' => translate('midTerm'), 
+										'3' => translate('Mid'), 
+										'4' => translate('XmasTerm'), 
+										'5' => translate('LentTerm'), 
+										'6' => translate('SummerTerm'), 
 									);
 									echo form_dropdown("type_id", $arrayType, set_value('type_id'), "class='form-control' id='type_id'
 									data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");

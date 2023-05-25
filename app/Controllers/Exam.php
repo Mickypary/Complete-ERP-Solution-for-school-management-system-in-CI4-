@@ -424,6 +424,7 @@ class Exam extends BaseController
         $subjectID = $this->request->getVar('subject_id');
         $examID = $this->request->getVar('exam_id');
         $typeID = $this->request->getVar('type_id');
+        $typeRelID = $this->request->getVar('type_rel_id');
 
         $this->data['branch_id'] = $branchID;
         $this->data['class_id'] = $classID;
@@ -431,6 +432,7 @@ class Exam extends BaseController
         $this->data['subject_id'] = $subjectID;
         $this->data['exam_id'] = $examID;
         $this->data['type_id'] = $typeID;
+        $this->data['type_rel_id'] = $typeRelID;
         if (isset($_POST['search'])) {
             $this->data['timetable_detail'] = $this->exam_model->getTimetableDetail($classID, $sectionID, $examID, $subjectID);
 
@@ -469,6 +471,7 @@ class Exam extends BaseController
                 $subjectID = $this->request->getVar('subject_id');
                 $examID = $this->request->getVar('exam_id');
                 $typeID = $this->request->getVar('type_id');
+                $typeRelID = $this->request->getVar('type_rel_id');
                 $inputMarks = $this->request->getVar('mark');
                 $pary = $this->request->getVar('pary');
                 // print_r($pary);
@@ -507,27 +510,119 @@ class Exam extends BaseController
                         }
                         if ($typeID == 3) {
                             $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
-                            $this->db->table('mark')->where(array('type_id' => 4, 'student_id' => $value['student_id']))->update(array('mark_mid' => $inputMark));
+
+                            // if ($typeRelID == 4) {
+                            //     $where = "type_id=4 AND student_id= ".$value['student_id']. " AND subject_id =".$subjectID;
+                            //     $this->db->table('mark_rel')
+                            //     ->where($where)
+                            //     ->update(array('mark_mid' => $inputMark));
+                            //     }
+
                         }else {
                             $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
                         }
                         // $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
                     } elseif($typeID == 3) {
                         $arrayMarks['mark'] = $inputMark;
-                        $arrayMarks['mark_mid'] = $inputMark;
+                        // $arrayMarks['mark_mid'] = $inputMark;
+                        $arrayMarks['total'] = $totalMark;
+                        $arrayMarks['absent'] = $absent;
+                        $res = $this->db->table('mark')->insert($arrayMarks);
+                        // send exam results sms
+                        // $this->sms_model->send_sms($arrayMarks, 5);
+                    }elseif($typeID == 4 && $typeRelID == 4) {
+                        $arrayMarks['mark'] = $inputMark;
+                        // $arrayMarks['mark_mid'] = $inputMark;
                         $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
-                        // send exam results sms
-                        // $this->sms_model->send_sms($arrayMarks, 5);
-                    }else {
+                    }elseif($typeID == 5 && $typeRelID == 5) {
+                        $arrayMarks['mark'] = $inputMark;
+                        // $arrayMarks['mark_mid'] = $inputMark;
+                        $arrayMarks['total'] = $totalMark;
+                        $arrayMarks['absent'] = $absent;
+                        $this->db->table('mark')->insert($arrayMarks);
+                    }elseif($typeID == 6 && $typeRelID == 6) {
                         $arrayMarks['mark'] = $inputMark;
                         // $arrayMarks['mark_mid'] = $inputMark;
                         $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
                     }
-                }
+                        
+
+                    } // End 1st Foreach
+
+                    foreach ($inputMarks as $key => $value) {
+                    $assMark = array();
+                    $sum = array();
+                    foreach ($value['sum'] as $i => $row1) {
+                        $sum[$i] = $row1;
+                    }
+
+                    foreach ($value['assessment'] as $i => $row) {
+                        $assMark[$i] = $row;
+                        
+                    }
+                    
+                    $arrayMarks = array(
+                        'student_id' => $value['student_id'],
+                        'exam_id' => $examID,
+                        'class_id' => $classID,
+                        'section_id' => $sectionID,
+                        'subject_id' => $subjectID,
+                        'branch_id' => $branchID,
+                        'type_id' => $typeRelID,
+                        'session_id' => get_session_id(),
+                    );
+                    $inputMark = (isset($value['absent']) ? null : json_encode($assMark));
+                    $totalMark = (isset($value['absent']) ? null : json_encode($sum));
+                    $absent = (isset($value['absent']) ? 'on' : '');
+                    $query = $this->db->table('mark_rel')->getWhere($arrayMarks);
+                    // print_r($sum);
+                    // die();
+                        if($typeID == 3 && $typeRelID == 4) {
+                            if ($query->getNumRows() > 0) {
+                                $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
+                                if ($absent) {
+                                    $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
+                                }
+                                $builder->update(array('mark_mid' => $inputMark, 'absent' => $absent));
+                                // $where = "type_id=" . $typeRelID . " AND student_id= ".$value['student_id']. " AND subject_id =".$subjectID;
+                                // $this->db->table('mark_rel')
+                                // ->where($where)
+                                // ->update(array('mark_mid' => $inputMark));
+                            }else {
+                                // $arrayMarks['mark'] = $inputMark;
+                                $arrayMarks['type_id'] = $typeRelID;
+                                $arrayMarks['mark_mid'] = $inputMark;
+                                // $arrayMarks['total'] = $totalMark;
+                                $arrayMarks['absent'] = $absent;
+                                $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                            }
+                            
+                            
+                        // send exam results sms
+                        // $this->sms_model->send_sms($arrayMarks, 5);
+                        }elseif($typeID == 3 && $typeRelID == 5) {
+                            // $arrayMarks['mark'] = $inputMark;
+                            $arrayMarks['type_id'] = $typeRelID;
+                            $arrayMarks['mark_mid'] = $inputMark;
+                            // $arrayMarks['total'] = $totalMark;
+                            $arrayMarks['absent'] = $absent;
+                            $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                        }elseif($typeID == 3 && $typeRelID == 6) {
+                            // $arrayMarks['mark'] = $inputMark;
+                            $arrayMarks['type_id'] = $typeRelID;
+                            $arrayMarks['mark_mid'] = $inputMark;
+                            // $arrayMarks['total'] = $totalMark;
+                            $arrayMarks['absent'] = $absent;
+                            $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                        }
+
+
+                    } // End 2nd Foreach
+
                 $message = translate('information_has_been_saved_successfully');
                 $array = array('status' => 'success', 'message' => $message);
                 // return redirect()->to(current_url());
@@ -537,7 +632,9 @@ class Exam extends BaseController
             }
             echo json_encode($array);
         }
+
     }
+
 
     /* exam grade form validation rules */
     protected function grade_validation()

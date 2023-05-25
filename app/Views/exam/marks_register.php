@@ -67,12 +67,43 @@ $this->exam_model = new ExamModel();
                 				foreach ($result as $row){
 										// $arrayType[$row->id] = $row->type_id;
 										if ($row->type_id == 4) {
-											$arrayType[$row->type_id] = 'End Of Term';
+											$arrayType[$row->type_id] = 'End Of Xmas Term';
+
 										}elseif($row->type_id == 3) {
-											$arrayType[$row->type_id] = 'Mark and GPA';
+											// $arrayType[$row->type_id] = 'Mark and GPA';
+											$arrayType[$row->type_id] = 'Mid';
+										}elseif($row->type_id == 5) {
+											$arrayType[$row->type_id] = 'End Of Lent Term';
+										}elseif ($row->type_id == 6) {
+											$arrayType[$row->type_id] = 'End Of 3rd Term';
 										}
 									}
 								echo form_dropdown("type_id", $arrayType, set_value('type_id'), "class='form-control' 
+								required data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");
+							?>
+						</div>
+					</div>
+					<div class="col-md-2 mb-sm">
+						<div class="form-group">
+							<label class="control-label"><?=translate('exam_type_rel')?> <span class="required">*</span></label>
+							<?php
+								// $arrayClass = $this->app_lib->getExamType($branch_id);
+							$arrayTypes = array("" => translate('select'));
+								$builder = $this->db->table('exam');
+                				$result = $builder->get()->getResult();
+                				// print_r($result);
+                				foreach ($result as $row){
+										// $arrayType[$row->id] = $row->type_id;
+										if ($row->type_id == 4) {
+											$arrayTypes[$row->type_id] = 'End Of Xmas Term';
+
+										}elseif($row->type_id == 5) {
+											$arrayTypes[$row->type_id] = 'End Of Lent Term';
+										}elseif ($row->type_id == 6) {
+											$arrayTypes[$row->type_id] = 'End Of 3rd Term';
+										}
+									}
+								echo form_dropdown("type_rel_id", $arrayType, set_value('type_rel_id'), "class='form-control' 
 								required data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");
 							?>
 						</div>
@@ -130,7 +161,7 @@ $this->exam_model = new ExamModel();
 		<?php if (isset($student)): ?>
 
 		<section class="panel appear-animation" data-appear-animation="<?php echo $global_config['animations'];?>" data-appear-animation-delay="100">
-			<?php echo form_open('exam/mark_save', array('class' => 'frm-submit-msg', 'id' => 'myForm'));
+			<?php echo form_open('exam/mark_save', array('class' => 'frm-submit-msg'));
 				$data = array(
 					'class_id' => $class_id,
 					'section_id' => $section_id,
@@ -139,6 +170,7 @@ $this->exam_model = new ExamModel();
 					'session_id' => get_session_id(),
 					'branch_id' => $branch_id,
 					'type_id' => $type_id,
+					'type_rel_id' => $type_rel_id,
 				);
 				echo form_hidden($data);
 			?>
@@ -260,8 +292,17 @@ $this->exam_model = new ExamModel();
 			<div class="panel-footer">
 				<div class="row">
 					<div class="col-md-offset-10 col-md-2">
-						<button type="submit" id="pary" name="save" value="1" class="btn btn-default btn-block" data-loading-text="<i class='fas fa-spinner fa-spin'></i> Processing">
+						<button type="submit" name="save" value="1" class="btn btn-default btn-block" data-loading-text="<i class='fas fa-spinner fa-spin'></i> Processing">
 							<i class="fas fa-plus-circle"></i> <?=translate('save')?>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-footer">
+				<div class="row">
+					<div class="col-md-offset-10 col-md-2">
+						<button type="submit" name="mid" value="1" class="btn btn-default btn-block" data-loading-text="<i class='fas fa-spinner fa-spin'></i> Processing">
+							<i class="fas fa-plus-circle"></i> <?=translate('update_mid')?>
 						</button>
 					</div>
 				</div>
@@ -296,32 +337,6 @@ $this->exam_model = new ExamModel();
 				}
 			});
 		});
-
-
-		$('#pary').on('click', function(e) {
-
-			var pary = $('#mark[]').val();
-			var micky = 'Gbemi';
-
-			$.ajax({
-				url: base_url + 'exam/mark_save',
-				type: 'POST',
-				data: {
-					pary: pary,
-					gbemi: micky,
-				},
-				success: function(data) {
-					$('#mark[sum][4]').html(data);
-				}
-			});
-
-		})
-
-
-
-
-
-
 
 	});
 </script>

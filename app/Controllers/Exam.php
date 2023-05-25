@@ -473,8 +473,7 @@ class Exam extends BaseController
                 $typeID = $this->request->getVar('type_id');
                 $typeRelID = $this->request->getVar('type_rel_id');
                 $inputMarks = $this->request->getVar('mark');
-                $pary = $this->request->getVar('pary');
-                // print_r($pary);
+
                 foreach ($inputMarks as $key => $value) {
                     $assMark = array();
                     $sum = array();
@@ -501,8 +500,6 @@ class Exam extends BaseController
                     $totalMark = (isset($value['absent']) ? null : json_encode($sum));
                     $absent = (isset($value['absent']) ? 'on' : '');
                     $query = $this->db->table('mark')->getWhere($arrayMarks);
-                    // print_r($sum);
-                    // die();
                     if ($query->getNumRows() > 0) {
                         $builder = $this->db->table('mark')->where('id', $query->getRow()->id);
                         if ($absent) {
@@ -553,6 +550,9 @@ class Exam extends BaseController
 
                     } // End 1st Foreach
 
+
+                    // FOR UPDATE OR INSERT INTO MARK_REL
+
                     foreach ($inputMarks as $key => $value) {
                     $assMark = array();
                     $sum = array();
@@ -579,8 +579,6 @@ class Exam extends BaseController
                     $totalMark = (isset($value['absent']) ? null : json_encode($sum));
                     $absent = (isset($value['absent']) ? 'on' : '');
                     $query = $this->db->table('mark_rel')->getWhere($arrayMarks);
-                    // print_r($sum);
-                    // die();
                         if($typeID == 3 && $typeRelID == 4) {
                             if ($query->getNumRows() > 0) {
                                 $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
@@ -588,15 +586,9 @@ class Exam extends BaseController
                                     $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
                                 }
                                 $builder->update(array('mark_mid' => $inputMark, 'absent' => $absent));
-                                // $where = "type_id=" . $typeRelID . " AND student_id= ".$value['student_id']. " AND subject_id =".$subjectID;
-                                // $this->db->table('mark_rel')
-                                // ->where($where)
-                                // ->update(array('mark_mid' => $inputMark));
                             }else {
-                                // $arrayMarks['mark'] = $inputMark;
                                 $arrayMarks['type_id'] = $typeRelID;
                                 $arrayMarks['mark_mid'] = $inputMark;
-                                // $arrayMarks['total'] = $totalMark;
                                 $arrayMarks['absent'] = $absent;
                                 $res = $this->db->table('mark_rel')->insert($arrayMarks);
                             }
@@ -605,19 +597,31 @@ class Exam extends BaseController
                         // send exam results sms
                         // $this->sms_model->send_sms($arrayMarks, 5);
                         }elseif($typeID == 3 && $typeRelID == 5) {
-                            // $arrayMarks['mark'] = $inputMark;
-                            $arrayMarks['type_id'] = $typeRelID;
-                            $arrayMarks['mark_mid'] = $inputMark;
-                            // $arrayMarks['total'] = $totalMark;
-                            $arrayMarks['absent'] = $absent;
-                            $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                           if ($query->getNumRows() > 0) {
+                                $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
+                                if ($absent) {
+                                    $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
+                                }
+                                $builder->update(array('mark_mid' => $inputMark, 'absent' => $absent));
+                            }else {
+                                $arrayMarks['type_id'] = $typeRelID;
+                                $arrayMarks['mark_mid'] = $inputMark;
+                                $arrayMarks['absent'] = $absent;
+                                $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                            }
                         }elseif($typeID == 3 && $typeRelID == 6) {
-                            // $arrayMarks['mark'] = $inputMark;
-                            $arrayMarks['type_id'] = $typeRelID;
-                            $arrayMarks['mark_mid'] = $inputMark;
-                            // $arrayMarks['total'] = $totalMark;
-                            $arrayMarks['absent'] = $absent;
-                            $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                            if ($query->getNumRows() > 0) {
+                                $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
+                                if ($absent) {
+                                    $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
+                                }
+                                $builder->update(array('mark_mid' => $inputMark, 'absent' => $absent));
+                            }else {
+                                $arrayMarks['type_id'] = $typeRelID;
+                                $arrayMarks['mark_mid'] = $inputMark;
+                                $arrayMarks['absent'] = $absent;
+                                $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                            }
                         }
 
 

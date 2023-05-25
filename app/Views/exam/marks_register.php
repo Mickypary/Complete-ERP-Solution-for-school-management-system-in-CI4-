@@ -298,15 +298,6 @@ $this->exam_model = new ExamModel();
 					</div>
 				</div>
 			</div>
-			<div class="panel-footer">
-				<div class="row">
-					<div class="col-md-offset-10 col-md-2">
-						<button type="submit" name="mid" value="1" class="btn btn-default btn-block" data-loading-text="<i class='fas fa-spinner fa-spin'></i> Processing">
-							<i class="fas fa-plus-circle"></i> <?=translate('update_mid')?>
-						</button>
-					</div>
-				</div>
-			</div>
 			<?php echo form_close(); ?>
 		</section>
 		<?php endif; ?>

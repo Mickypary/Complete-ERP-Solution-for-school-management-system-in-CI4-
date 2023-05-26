@@ -116,17 +116,14 @@ if (count($student_array)) {
 				<?php } elseif ($getExam['type_id'] == 3) { ?>
 					<th align="left"><?= strtoupper('Total') ?></th>
 					<th align="left"><?= strtoupper('Grade') ?></th>
-					<th align="left"><?= strtoupper('Point') ?></th>
-				<?php } elseif($getExam['type_id'] == 4 || $getExam['type_id'] == 5) { ?>
+					<th align="left"><?= strtoupper('Remarks') ?></th>
+					<th align="left"><?= strtoupper('GPA') ?></th>
+				<?php } elseif($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6) { ?>
 					<th align="left"><?= strtoupper('MidTerm') ?></th>	
 					<th align="left"><?= strtoupper('Total') ?></th>					
 					<th align="left"><?= strtoupper('Grade') ?></th>
-					<th align="left"><?= strtoupper('Point') ?></th>
-				<?php } elseif($getExam['type_id'] == 6) { ?>
-					<th align="left"><?= strtoupper('MidTerm') ?></th>	
-					<th align="left"><?= strtoupper('Total') ?></th>					
-					<th align="left"><?= strtoupper('Grade') ?></th>
-					<th align="left"><?= strtoupper('Point') ?></th>
+					<th align="left"><?= strtoupper('Remarks') ?></th>
+					<th align="left"><?= strtoupper('GPA') ?></th>
 				<?php } ?>
 				</tr>
 			</thead>
@@ -139,7 +136,6 @@ if (count($student_array)) {
 			$grand_full_marks = 0;
 			$result_status = 1;
 			foreach ($getMarksList as $row) {
-				// print_r($row['mark_mid']);
 			?>
 				<tr>
 					<td valign="middle" width="35%"><?= strtoupper($row['subject_name'])?></td>
@@ -150,31 +146,37 @@ if (count($student_array)) {
 				$fullMarkDistribution = json_decode($row['mark_distribution'], true);
 				$obtainedMark = json_decode($row['get_mark'], true);
 				$obtainedMid = json_decode($row['mark_mid'], true);
-				// print_r($result['exam']);
+
 				foreach ($fullMarkDistribution as $i => $val) {
-					// print_r($obtainedMid[$i]);
 					$obtained_mark = isset($obtainedMark[$i]) ? floatval($obtainedMark[$i]) : '';
 					$obtained_mid = isset($obtainedMid[$i]) ? floatval($obtainedMid[$i]) : '';
+
+					if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6) {
+							$total_obtain_marks += $obtained_mark + (number_format($obtained_mid,0)*0.2);
+					}elseif($getExam['type_id'] == 3) {
+						$total_obtain_marks += $obtained_mark;
+					}
+
 					$fullMark = floatval($val['full_mark']);
 					$passMark = floatval($val['pass_mark']);
 					if ($obtained_mark < $passMark) {
 						$result_status = 0;
 					}
 
-					$total_obtain_marks += isset($obtained_mark) ? intval($obtained_mark) : 0;
+
+					// $total_obtain_marks += isset($obtained_mark) ? intval($obtained_mark) : 0;
 					$total_obtain_mid += isset($obtained_mid) ? floatval(intval($obtained_mid) * 0.2) : 0;
 					$obtained = $row['get_abs'] == 'on' ? 'Absent' : $obtained_mark;
 					$total_full_marks += ($fullMark);
-					// print_r($total_full_marks);
 					?>
+
 				<?php if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3){ ?>
 					<td valign="middle">
 						<?php 
 							if ($row['get_abs'] == 'on') {
 								echo 'Absent';
 							} else {
-								echo $obtained_mark;
-								// echo $obtained_mark . '/' . $fullMark;
+								echo $obtained_mark . '/' . $fullMark;
 							}
 						?>
 					</td>
@@ -190,28 +192,37 @@ if (count($student_array)) {
 							}
 						?>
 					</td>
-				<?php } if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6){ ?>
+					<?php } if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6){ ?>
 					<td valign="middle">
 						<?php 
 							if ($row['get_abs'] == 'on') {
 								echo 'Absent';
 							} else {
-								echo $obtained_mark;
-								// echo $obtained_mark . '/' . $fullMark;
+								// echo $obtained_mark;
+								echo $obtained_mark . '/' . $fullMark;
 							}
 						?>
 					</td>
-				<?php
-				}
-				}
+					<?php
+					}
+				} // End Full Mark Dist  Foreach Loop
+
+				// After this loop then we start adding the totals
+
 				$grand_obtain_marks += $total_obtain_marks;
-				print_r($obtained_mid);
-				
-				$grand_full_marks += $total_full_marks;
+									
+									
+				// $grand_full_marks += ($total_full_marks+20);
+				if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6) {
+					$grand_full_marks += ($total_full_marks+20);
+				}elseif($getExam['type_id'] == 3) {
+					$grand_full_marks += $total_full_marks;
+				}
 				?>
+
+				<!-- TOTAL STARTING HERE -->
 				<?php if($getExam['type_id'] == 1 || $getExam['type_id'] == 3) { ?>
 					<td valign="middle"><?=number_format($total_obtain_marks, 0) . "/" . $total_full_marks?></td>
-					<!-- <?php $total_obtain_marks += $total_obtain_mid; ?> -->
 				<?php } if($getExam['type_id'] == 2) { 
 					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
@@ -219,59 +230,122 @@ if (count($student_array)) {
 					?>
 					<td valign="middle"><?=$grade['name']?></td>
 					<td valign="middle"><?=number_format($grade['grade_point'], 2, '.', '')?></td>
-				<?php } if ($getExam['type_id'] == 3) {
-					$colspan += 2;
-					// $percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
-					$percentage_grade = ($total_obtain_marks - number_format($total_obtain_mid,0)) / ($total_full_marks) *100;
+
+					<!-- For TypeID = 3  -->
+					<?php } if ($getExam['type_id'] == 3) {
+						$colspan += 2;
+					$percentage_grade = ($total_obtain_marks * 100) / $total_full_marks;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
-					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					
+					<!-- For Grade Name -->
+					<?php if($grade['name'] == "A*"): ?>
+					<td valign="middle" style="color: green"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "A"): ?>
+						<td valign="middle" style="color: blue"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "B"): ?>
+						<td valign="middle" style="color: #A52A2A;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "C"): ?>
+						<td valign="middle" style="color: #FFA500;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "D"): ?>
+						<td valign="middle" style="color: #FFA07A;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "E"): ?>
+						<td valign="middle" style="color: #800000;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "F"): ?>
+						<td valign="middle" style="color: #DC143C;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php endif; ?>
+					
+					<!-- For Grade Remark -->
+					<?php if($grade['name'] == "A*"): ?>
+					<td valign="middle" style="color: green"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "A"): ?>
+						<td valign="middle" style="color: blue"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "B"): ?>
+						<td valign="middle" style="color: #A52A2A;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "C"): ?>
+						<td valign="middle" style="color: #FFA500;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "D"): ?>
+						<td valign="middle" style="color: #FFA07A;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "E"): ?>
+						<td valign="middle" style="color: #800000;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "F"): ?>
+						<td valign="middle" style="color: #DC143C;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php endif; ?>
+
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
-					<?php
-					$grand_obtain_mid += $total_obtain_marks;
-					// $grand_obtain_mid += $total_obtain_mid;
-					$total_obtain_marks += $total_obtain_mid;
 
-					?>
-
-				<?php } if($getExam['type_id'] == 4) { 
+					<!-- For TypeID = 4 -->
+					<?php } if($getExam['type_id'] == 4) { 
 					$colspan += 2;
-					$percentage_grade = ($total_obtain_marks + number_format($total_obtain_mid,0)) / ($total_full_marks+20) *100;
-
+					$percentage_grade = ($total_obtain_marks) / ($total_full_marks+20) *100;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
-					// $grade = $this->exam_model->get_grade($total_obtain_marks+$total_obtain_mid, $getExam['branch_id']);
-					// print_r($grade);
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
-					<td valign="middle"><?=number_format($total_obtain_marks + $total_obtain_mid,  0,) . "/" . ($total_full_marks + 20)?></td>
-					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<td valign="middle"><?=number_format($total_obtain_marks,0,) . "/" . ($total_full_marks + 20)?></td>
+
+					<!-- For Grade Name -->
+					<?php if($grade['name'] == "A*"): ?>
+					<td valign="middle" style="color: green"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "A"): ?>
+						<td valign="middle" style="color: blue"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "B"): ?>
+						<td valign="middle" style="color: #A52A2A;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "C"): ?>
+						<td valign="middle" style="color: #FFA500;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "D"): ?>
+						<td valign="middle" style="color: #FFA07A;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "E"): ?>
+						<td valign="middle" style="color: #800000;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "F"): ?>
+						<td valign="middle" style="color: #DC143C;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php endif; ?>
+
+					<!-- For Grade Remark -->
+					<?php if($grade['name'] == "A*"): ?>
+					<td valign="middle" style="color: green"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "A"): ?>
+						<td valign="middle" style="color: blue"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "B"): ?>
+						<td valign="middle" style="color: #A52A2A;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "C"): ?>
+						<td valign="middle" style="color: #FFA500;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "D"): ?>
+						<td valign="middle" style="color: #FFA07A;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "E"): ?>
+						<td valign="middle" style="color: #800000;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "F"): ?>
+						<td valign="middle" style="color: #DC143C;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php endif; ?>
+
+
+					<!-- <td valign="middle"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td> -->
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
 
 				</tr>
-			<?php } if($getExam['type_id'] == 5 || $getExam['type_id'] == 6) { 
-					$colspan += 2;
-					$percentage_grade = ($total_obtain_marks + number_format($total_obtain_mid,0)) / ($total_full_marks) *100;
 
+				<?php } if($getExam['type_id'] == 5 || $getExam['type_id'] == 6) { 
+					$colspan += 2;
+					$percentage_grade = ($total_obtain_marks) / ($total_full_marks+20) *100;
 					$grade = $this->exam_model->get_grade($percentage_grade, $getExam['branch_id']);
-					// $grade = $this->exam_model->get_grade($total_obtain_marks+$total_obtain_mid, $getExam['branch_id']);
-					// print_r($grade);
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
-					<td valign="middle"><?=number_format($total_obtain_marks + $total_obtain_mid,  0,) . "/" . ($total_full_marks)?></td>
-					<td valign="middle"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<td valign="middle"><?=number_format($total_obtain_marks,0,) . "/" . ($total_full_marks + 20)?></td>
+					<td valign="middle"><?=isset($grade['name']) ? $grade['remark'] : ''?></td>
+					<td valign="middle"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
 
 				</tr>
 			<?php } }?>
+
 			<?php if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3) { ?>
 				<tr class="text-weight-semibold">
 					<td valign="top" >GRAND TOTAL :</td>
 					<td valign="top" colspan="<?=$colspan?>"><?=$grand_obtain_marks . '/' . $grand_full_marks; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
 				</tr>
-				<tr class="text-weight-semibold">
+				<!-- <tr class="text-weight-semibold">
 					<td valign="top" >GRAND TOTAL IN WORDS :</td>
 					<td valign="top" colspan="<?=$colspan?>">
 						<?php
@@ -279,45 +353,45 @@ if (count($student_array)) {
 						echo ucwords($f->format($grand_obtain_marks));
 						?>
 					</td>
-				</tr>
+				</tr> -->
 			<?php } if ($getExam['type_id'] == 4 ) { ?>
 				<tr class="text-weight-semibold">
-					<td valign="top" >GRAND TOTAL :</td>
-					<td valign="top" colspan="<?=$colspan?>"><?=($grand_obtain_marks+intval($obtained_mid)) . '/' . $grand_full_marks + 20; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
-				</tr>
+						<td valign="top" >GRAND TOTAL :</td>
+						<td valign="top" colspan="<?=$colspan?>"><?=$grand_obtain_marks . '/' . $grand_full_marks; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
+					</tr>
+					<!-- <tr class="text-weight-semibold">
+						<td valign="top" >GRAND TOTAL IN WORDS :</td>
+						<td valign="top" colspan="<?=$colspan?>">
+							<?php
+							$f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+							echo ucwords($f->format($grand_obtain_marks));
+							?>
+						</td>
+					</tr> -->
+			<?php } if ($getExam['type_id'] == 5 || $getExam['type_id'] == 6 ) { ?>
 				<tr class="text-weight-semibold">
-					<td valign="top" >GRAND TOTAL IN WORDS :</td>
-					<td valign="top" colspan="<?=$colspan?>">
-						<?php
-						$f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
-						echo ucwords($f->format($grand_obtain_marks));
-						?>
-					</td>
-				</tr>
-			<?php } if ($getExam['type_id'] == 5 ) { ?>
-				<tr class="text-weight-semibold">
-					<td valign="top" >GRAND TOTAL :</td>
-					<td valign="top" colspan="<?=$colspan?>"><?=($grand_obtain_marks+intval($obtained_mid)) . '/' . $grand_full_marks + 20; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / $grand_full_marks; echo number_format($percentage, 2, '.', '')?>%</td>
-				</tr>
-				<tr class="text-weight-semibold">
-					<td valign="top" >GRAND TOTAL IN WORDS :</td>
-					<td valign="top" colspan="<?=$colspan?>">
-						<?php
-						$f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
-						echo ucwords($f->format($grand_obtain_marks));
-						?>
-					</td>
-				</tr>
+						<td valign="top" >GRAND TOTAL :</td>
+						<td valign="top" colspan="<?=$colspan?>"><?=$total_obtain_marks . '/' . $grand_full_marks; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / ($grand_full_marks+40); echo number_format($percentage, 2, '.', '')?>%</td>
+					</tr>
+					<!-- <tr class="text-weight-semibold">
+						<td valign="top" >GRAND TOTAL IN WORDS :</td>
+						<td valign="top" colspan="<?=$colspan?>">
+							<?php
+							$f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+							echo ucwords($f->format($grand_obtain_marks));
+							?>
+						</td>
+					</tr> -->
 			<?php } if ($getExam['type_id'] == 2) { ?>
 				<tr class="text-weight-semibold">
-					<td valign="top" >GPA :</td>
+					<td valign="top" >CGPA :</td>
 					<td valign="top" colspan="<?=$colspan+1?>"><?=number_format(($total_grade_point / count($getMarksList)), 2, '.', '')?></td>
 				</tr>
-			<?php } if ($getExam['type_id'] == 3 || $getExam['type_id'] == 4 ) { ?>
+			<?php } if ($getExam['type_id'] == 3 || $getExam['type_id'] == 4 || $getExam['type_id'] == 5 ) { ?>
 				<tr class="text-weight-semibold">
-					<td valign="top" >GPA :</td>
-					<td valign="top" colspan="<?=$colspan?>"><?=number_format(($total_grade_point / count($getMarksList)), 2, '.', '')?></td>
-				</tr>
+							<td valign="top" >CGPA :</td>
+							<td valign="top" colspan="<?=$colspan?>"><?=number_format(($total_grade_point / count($getMarksList)), 2, '.', '')?></td>
+						</tr>
 			<?php } if ($getExam['type_id'] == 1 || $getExam['type_id'] == 3 || $getExam['type_id'] == 4) { ?>
 				<tr class="text-weight-semibold">
 					<td valign="top" >RESULT :</td>

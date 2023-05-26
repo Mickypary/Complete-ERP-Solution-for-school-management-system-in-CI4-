@@ -805,6 +805,12 @@ class Exam extends BaseController
     /* tabulation sheet report generating here */
     public function tabulation_sheet()
     {
+        $typeRelID = '';
+        if (!is_loggedin()) {
+            session()->set('redirect_url', current_url());
+            return redirect()->to(base_url().'authentication');
+        }
+
         if (!get_permission('tabulation_sheet', 'is_view')) {
             access_denied();
         }

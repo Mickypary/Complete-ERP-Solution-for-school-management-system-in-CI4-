@@ -211,9 +211,7 @@ $this->exam_model = new ExamModel();
 							$result = $this->exam_model->getStudentReportCard($studentID, $exam_id, $sessionID);
 							$student = $result['student'];
 							$getMarksList = $result['exam'];
-							// print_r($getMarksList);
 							$obtainedMark = json_decode($row['get_mark'], true);
-							// print_r($obtainedMark);
 
 							?>
 
@@ -246,20 +244,15 @@ $this->exam_model = new ExamModel();
 
 								$sum = 0;
 								foreach ($distributions as $id => $ass) {
-									// print_r($getDetails[$id]);
-								// die();
 
 									$fullMark = floatval($ass['full_mark']);
 									$passMark = floatval($ass['pass_mark']);
-
-
 
 
 									$existMark = isset($getDetails[$id]) ? floatval($getDetails[$id])  : '';
 
 									$total_obtain_marks += intval($existMark);
 									$total_full_marks += $fullMark;
-									// print_r($existMark);
 
 									?>
 								<td class="min-w-sm">

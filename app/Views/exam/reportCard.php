@@ -333,8 +333,41 @@ if (count($student_array)) {
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
 					<td valign="middle"><?=number_format($total_obtain_marks,0,) . "/" . ($total_full_marks + 20)?></td>
-					<td valign="middle"><?=isset($grade['name']) ? $grade['remark'] : ''?></td>
-					<td valign="middle"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					
+					<!-- For Grade Name -->
+					<?php if($grade['name'] == "A*"): ?>
+					<td valign="middle" style="color: green"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "A"): ?>
+						<td valign="middle" style="color: blue"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "B"): ?>
+						<td valign="middle" style="color: #A52A2A;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "C"): ?>
+						<td valign="middle" style="color: #FFA500;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "D"): ?>
+						<td valign="middle" style="color: #FFA07A;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "E"): ?>
+						<td valign="middle" style="color: #800000;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php elseif($grade['name'] == "F"): ?>
+						<td valign="middle" style="color: #DC143C;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
+					<?php endif; ?>
+					
+					<!-- For Grade Remark -->
+					<?php if($grade['name'] == "A*"): ?>
+					<td valign="middle" style="color: green"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "A"): ?>
+						<td valign="middle" style="color: blue"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "B"): ?>
+						<td valign="middle" style="color: #A52A2A;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "C"): ?>
+						<td valign="middle" style="color: #FFA500;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "D"): ?>
+						<td valign="middle" style="color: #FFA07A;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "E"): ?>
+						<td valign="middle" style="color: #800000;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php elseif($grade['name'] == "F"): ?>
+						<td valign="middle" style="color: #DC143C;"><?=isset($grade['remark']) ? $grade['remark'] : ''?></td>
+					<?php endif; ?>
+
 					<td valign="middle"><?=number_format(isset($grade['grade_point']) ? $grade['grade_point'] : 0, 2, '.', '')?></td>
 
 				</tr>
@@ -451,7 +484,24 @@ if (count($student_array)) {
 					foreach ($grade as $key => $row) {
 					?>
 						<tr>
-							<td style="width: 30%;"><?=$row['name']?></td>
+
+							<?php if($row['name'] == "A*"): ?>
+							<td valign="middle" style="color: green; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php elseif($row['name'] == "A"): ?>
+								<td valign="middle" style="color: blue; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php elseif($row['name'] == "B"): ?>
+								<td valign="middle" style="color: #A52A2A; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php elseif($row['name'] == "C"): ?>
+								<td valign="middle" style="color: #FFA500; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php elseif($row['name'] == "D"): ?>
+								<td valign="middle" style="color: #FFA07A; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php elseif($row['name'] == "E"): ?>
+								<td valign="middle" style="color: #800000; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php elseif($row['name'] == "F"): ?>
+								<td valign="middle" style="color: #DC143C; width: 30%"><?=isset($row['name']) ? $row['name'] : ''?></td>
+							<?php endif; ?>
+
+
 							<td style="width: 30%;"><?=$row['lower_mark']?>%</td>
 							<td style="width: 30%;"><?=$row['upper_mark']?>%</td>
 						</tr>
@@ -461,14 +511,43 @@ if (count($student_array)) {
 			</div>
 	<?php } } ?>
 		</div>
-	<?php if (!empty($remarks_array[$sc])) { ?>
+	<?php if (!empty($teacher_remarks_array[$sc])) { ?>
+		<?php
+
+		$arrayMarks = array(
+            'student_id' => $studentID,
+            'exam_id' => $examID,
+            'class_id' => $classID,
+            'section_id' => $sectionID,
+            'branch_id' => $branchID,
+            'session_id' => $sessionID,
+            // 'session_id' => get_session_id(),
+        );
+
+		$query = $this->db->table('remarks')->getWhere($arrayMarks);
+
+		if ($query->getNumRows() > 0) {
+	        $builder = $this->db->table('remarks')->where('id', $query->getRow()->id);
+
+	        $builder->update(array('teacher_remarks' => $teacher_remarks_array[$sc], 'principal_remarks' => $principal_remarks_array[$sc]));
+	    }else {
+            $arrayMarks['teacher_remarks'] = $teacher_remarks_array[$sc];
+            $arrayMarks['principal_remarks'] = $principal_remarks_array[$sc];
+            $res = $this->db->table('remarks')->insert($arrayMarks);
+        }
+
+		?>
 		<div style="width: 100%;">
 			<table cellpadding="5" border="1" bordercolor="#0f2df7" class="table table-condensed table-bordered" style="font-family:georgia,garamond,serif;">
 				<tbody>
 					<br>
 					<tr>
-						<th style="width: 250px;">Remarks</th>
-						<td><?=$remarks_array[$sc]?></td>
+						<th style="width: 250px;">Teacher's Remarks</th>
+						<td><?=$teacher_remarks_array[$sc]?></td>
+					</tr>
+					<tr>
+						<th style="width: 250px;">Principal's Remarks</th>
+						<td><?=$principal_remarks_array[$sc]?></td>
 					</tr>
 				</tbody>
 			</table>

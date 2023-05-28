@@ -508,13 +508,6 @@ class Exam extends BaseController
                         if ($typeID == 3) {
                             $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
 
-                            // if ($typeRelID == 4) {
-                            //     $where = "type_id=4 AND student_id= ".$value['student_id']. " AND subject_id =".$subjectID;
-                            //     $this->db->table('mark_rel')
-                            //     ->where($where)
-                            //     ->update(array('mark_mid' => $inputMark));
-                            //     }
-
                         }else {
                             $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
                         }
@@ -760,9 +753,10 @@ class Exam extends BaseController
             $examID = $this->request->getVar('exam_id');
             $classID = $this->request->getVar('class_id');
             $sectionID = $this->request->getVar('section_id');
-            $builder = $this->db->table('enroll as e')->select('e.roll,s.*,c.name as category')
+            $builder = $this->db->table('enroll as e')->select('e.roll,s.*,r.teacher_remarks,r.principal_remarks,c.name as category')
             ->join('student as s', 'e.student_id = s.id', 'inner')
             ->join('mark as m', 'm.student_id = s.id', 'inner')
+            ->join('remarks as r', 'r.student_id = s.id and r.exam_id = m.exam_id', 'left')
             ->join('student_category as c', 'c.id = s.category_id', 'left')
             ->where('e.session_id', $sessionID)
             ->where('e.class_id', $classID)
@@ -792,12 +786,16 @@ class Exam extends BaseController
                 ajax_access_denied();
             }
             $this->data['student_array'] = $this->request->getVar('student_id');
-            $this->data['remarks_array'] = $this->request->getVar('remarks');
+            $this->data['teacher_remarks_array'] = $this->request->getVar('teacher_remarks');
+            $this->data['principal_remarks_array'] = $this->request->getVar('principal_remarks');
             $this->data['grade_scale'] = $this->request->getVar('grade_scale');
             $this->data['attendance'] = $this->request->getVar('attendance');
             $this->data['print_date'] = $this->request->getVar('print_date');
             $this->data['examID'] = $this->request->getVar('exam_id');
+            $this->data['classID'] = $this->request->getVar('class_id');
+            $this->data['sectionID'] = $this->request->getVar('section_id');
             $this->data['sessionID'] = $this->request->getVar('session_id');
+            $this->data['branchID'] = $this->request->getVar('branch_id');
             return view('exam/reportCard', $this->data);
         }
     }

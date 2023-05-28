@@ -104,6 +104,9 @@ $this->db = \Config\Database::connect();
 				<?php echo form_open('exam/reportCardPrint', array('class' => 'printIn')); ?>
 				<input type="hidden" name="exam_id" value="<?=set_value('exam_id')?>">
 				<input type="hidden" name="session_id" value="<?=set_value('session_id')?>">
+				<input type="hidden" name="class_id" value="<?=set_value('class_id')?>">
+				<input type="hidden" name="section_id" value="<?=set_value('section_id')?>">
+				<input type="hidden" name="branch_id" value="<?=set_value('branch_id')?>">
 				<header class="panel-heading">
 					<h4 class="panel-title">
 						<i class="fas fa-users"></i> <?=translate('student_list')?>
@@ -151,7 +154,8 @@ $this->db = \Config\Database::connect();
 									<td><?=translate('register_no')?></td>
 									<td><?=translate('roll')?></td>
 									<td><?=translate('mobile_no')?></td>
-									<td><?=translate('remarks')?></td>
+									<td><?=translate('class_teacher_remarks')?></td>
+									<td><?=translate('principal_remarks')?></td>
 								</tr>
 							</thead>
 							<tbody>
@@ -174,7 +178,13 @@ $this->db = \Config\Database::connect();
 									<td><?=$row['mobileno']?></td>
 									<td class="min-w-sm">
 										<div class="form-group">
-											<input type="text" class="form-control" autocomplete="off" name="remarks[]" value="" />
+											<input type="text" class="form-control" autocomplete="off" name="teacher_remarks[]" value="<?=$row['teacher_remarks'] ?>" />
+											<span class="error"></span>
+										</div>
+									</td>
+									<td class="min-w-sm">
+										<div class="form-group">
+											<input type="text" class="form-control" autocomplete="off" name="principal_remarks[]" value="<?=$row['principal_remarks'] ?>" />
 											<span class="error"></span>
 										</div>
 									</td>

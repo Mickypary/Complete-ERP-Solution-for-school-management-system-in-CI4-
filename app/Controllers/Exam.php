@@ -500,8 +500,18 @@ class Exam extends BaseController
                     $totalMark = (isset($value['absent']) ? null : json_encode($sum));
                     $absent = (isset($value['absent']) ? 'on' : '');
                     $query = $this->db->table('mark')->getWhere($arrayMarks);
-                    if ($query->getNumRows() > 0) {
+                    $query1 = $this->db->table('cum_xmas_total')->getWhere($arrayMarks);
+                    $query2 = $this->db->table('cum_lent_total')->getWhere($arrayMarks);
+                    if ($query->getNumRows() > 0 || $query1->getNumRows() > 0 || $query2->getNumRows() > 0) {
                         $builder = $this->db->table('mark')->where('id', $query->getRow()->id);
+                        $builder1 = $this->db->table('cum_xmas_total');
+                        $builder2 = $this->db->table('cum_lent_total');
+                        if ($typeID == 4) {
+                            $builder1->where('id', $query1->getRow()->id);
+                        }
+                        if ($typeID == 5) {
+                            $builder2->where('id', $query2->getRow()->id);
+                        }
                         if ($absent) {
                             $this->db->table('mark')->where('id', $query->getRow()->id)->delete();
                         }
@@ -510,6 +520,8 @@ class Exam extends BaseController
 
                         }else {
                             $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
+                            $builder1->update(array('mark_xmas' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
+                            $builder2->update(array('mark_lent' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
                         }
                         // $builder->update(array('mark' => $inputMark, 'total' => $totalMark, 'absent' => $absent));
                     } elseif($typeID == 3) {
@@ -522,22 +534,25 @@ class Exam extends BaseController
                         // $this->sms_model->send_sms($arrayMarks, 5);
                     }elseif($typeID == 4 && $typeRelID == 4) {
                         $arrayMarks['mark'] = $inputMark;
-                        // $arrayMarks['mark_mid'] = $inputMark;
+                        $arrayMarks['mark_xmas'] = $inputMark;
                         $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
+                        $this->db->table('cum_xmas_total')->insert($arrayMarks);
                     }elseif($typeID == 5 && $typeRelID == 5) {
                         $arrayMarks['mark'] = $inputMark;
-                        // $arrayMarks['mark_mid'] = $inputMark;
+                        $arrayMarks['mark_lent'] = $inputMark;
                         $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
+                        $this->db->table('cum_lent_total')->insert($arrayMarks);
                     }elseif($typeID == 6 && $typeRelID == 6) {
                         $arrayMarks['mark'] = $inputMark;
                         // $arrayMarks['mark_mid'] = $inputMark;
                         $arrayMarks['total'] = $totalMark;
                         $arrayMarks['absent'] = $absent;
                         $this->db->table('mark')->insert($arrayMarks);
+                        // $this->db->table('cum_summer_total')->insert($arrayMarks);
                     }
                         
 
@@ -575,15 +590,19 @@ class Exam extends BaseController
                         if($typeID == 3 && $typeRelID == 4) {
                             if ($query->getNumRows() > 0) {
                                 $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
+                                // $cum_xmas_total = $this->db->table('cum_xmas_total')->where('id', $query->getRow()->id);
                                 if ($absent) {
                                     $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
                                 }
-                                $builder->update(array('mark_mid' => $inputMark, 'absent' => $absent));
+                                $builder->update(array('mark_mid' => $inputMark, 'mark_xmas' => $inputMark, 'absent' => $absent));
+                                // $cum_xmas_total->update(array('mark_mid' => $inputMark, 'mark_xmas' => $inputMark, 'absent' => $absent));
                             }else {
                                 $arrayMarks['type_id'] = $typeRelID;
                                 $arrayMarks['mark_mid'] = $inputMark;
+                                $arrayMarks['mark_xmas'] = $inputMark;
                                 $arrayMarks['absent'] = $absent;
                                 $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                                // $cum = $this->db->table('cum_xmas_total')->insert($arrayMarks);
                             }
                             
                             
@@ -595,12 +614,15 @@ class Exam extends BaseController
                                 if ($absent) {
                                     $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
                                 }
-                                $builder->update(array('mark_mid' => $inputMark, 'absent' => $absent));
+                                $builder->update(array('mark_mid' => $inputMark, 'mark_lent' => $inputMark, 'absent' => $absent));
                             }else {
                                 $arrayMarks['type_id'] = $typeRelID;
                                 $arrayMarks['mark_mid'] = $inputMark;
+                                // $arrayMarks['mark_xmas'] = $inputMark;
+                                $arrayMarks['mark_lent'] = $inputMark;
                                 $arrayMarks['absent'] = $absent;
                                 $res = $this->db->table('mark_rel')->insert($arrayMarks);
+                                // $cum = $this->db->table('cum_lent_total')->insert($arrayMarks);
                             }
                         }elseif($typeID == 3 && $typeRelID == 6) {
                             if ($query->getNumRows() > 0) {

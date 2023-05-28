@@ -694,7 +694,7 @@ $previous_details = json_decode($student['previous_details'], true);
 					$obtained_mid = isset($obtainedMid[$i]) ? floatval($obtainedMid[$i]) : '';
 
 					if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6) {
-							$total_obtain_marks += $obtained_mark + (number_format($obtained_mid,0)*0.2);
+							$total_obtain_marks += $obtained_mark + (number_format(floatval($obtained_mid),0)*0.2);
 					}elseif($getExam['type_id'] == 3) {
 						$total_obtain_marks += $obtained_mark;
 					}
@@ -829,7 +829,7 @@ $previous_details = json_decode($student['previous_details'], true);
 					
 
 					<!-- For Grade Name -->
-					<?php if($grade['name'] == "A*"): ?>
+					<!-- <?php if($grade['name'] == "A*"): ?>
 					<td valign="middle" style="color: green"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
 					<?php elseif($grade['name'] == "A"): ?>
 						<td valign="middle" style="color: blue"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
@@ -843,7 +843,7 @@ $previous_details = json_decode($student['previous_details'], true);
 						<td valign="middle" style="color: #800000;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
 					<?php elseif($grade['name'] == "F"): ?>
 						<td valign="middle" style="color: #DC143C;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
-					<?php endif; ?>
+					<?php endif; ?> -->
 
 					
 					<!-- For Grade Remark -->

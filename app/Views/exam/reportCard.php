@@ -51,6 +51,7 @@ if (count($student_array)) {
 						<tbody style="">
 							<tr><th valign="middle" style="font-size: 40px; text-align: center;" class="text-right"><?=$getSchool['school_name']?></th></tr>
 							<tr><th valign="middle" style="font-size: 20px; padding-top: 4px; text-align: center;" class="text-right">Academic Session : <?=$schoolYear?></th></tr>
+							<!-- <tr><th valign="middle" style="font-size: 20px; padding-top: 4px; text-align: center;" class="text-right"><?=$getExam['name']?></th></tr> -->
 							<tr><td valign="middle" style="font-size: 20px; text-align: center"><?=$getSchool['address']?></td></tr>
 							<tr><td valign="middle" style="font-size: 20px; text-align: center;"><?=$getSchool['mobileno']?></td></tr>
 							<tr><td valign="middle" style="font-size: 20px; text-align: center;"><?=$getSchool['email']?></td></tr>
@@ -68,6 +69,7 @@ if (count($student_array)) {
 				<?php endif;  ?>
 				</td>
 				</tr>
+				<tr><th colspan="3" valign="middle" style="font-size: 20px; padding-top: 4px; text-align: center;" class="text-right"><?=$getExam['name']?></th></tr>
 			</tbody>
 		</table>
 		<table cellpadding="10" border="1" bordercolor="#0f2df7" class="table table-bordered" style="margin-top: 20px; font-family:georgia,garamond,serif; font-size: 20px; border-width: thin; border-color: #0f2df7;">
@@ -163,8 +165,8 @@ if (count($student_array)) {
 				$obtainedTotalLent = json_decode($row['mark_lent'], true);
 				$xmasTotal = json_decode($row['xmas_mid_total'], true);
 				$lentTotal = json_decode($row['lent_mid_total'], true);
-				print_r($xmasTotal);
-				print_r($obtainedTotalXmas);
+				// print_r($xmasTotal);
+				// print_r($obtainedTotalXmas);
 
 				foreach ($fullMarkDistribution as $i => $val) {
 					$obtained_mark = isset($obtainedMark[$i]) ? floatval($obtainedMark[$i]) : '';
@@ -479,7 +481,7 @@ if (count($student_array)) {
 			<?php } if ($getExam['type_id'] == 5 || $getExam['type_id'] == 6 ) { ?>
 				<tr class="text-weight-semibold">
 						<td valign="top" >GRAND TOTAL :</td>
-						<td valign="top" colspan="<?=$colspan?>"><?=isset($total_obtain_marks) ? $total_obtain_marks : 0 . '/' . $grand_full_marks; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / ($grand_full_marks+40); echo number_format($percentage, 2, '.', '')?>%</td>
+						<td valign="top" colspan="<?=$colspan?>"><?=$grand_obtain_marks . '/' . ($grand_full_marks); ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / ($grand_full_marks); echo number_format($percentage, 2, '.', '')?>%</td>
 					</tr>
 					<!-- <tr class="text-weight-semibold">
 						<td valign="top" >GRAND TOTAL IN WORDS :</td>

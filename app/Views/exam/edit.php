@@ -53,9 +53,10 @@ $this->db = \Config\Database::connect();
 										'' => translate('select'), 
 										'1' => translate('marks'), 
 										'2' => translate('grade'), 
-										'3' => translate('marks_and_grade'), 
-										'4' => translate('XmasMidTerm'), 
-										'5' => translate('LentMidTerm'), 
+										'3' => translate('Mid'), 
+										'4' => translate('XmasTerm'), 
+										'5' => translate('LentTerm'), 
+										'6' => translate('SummerTerm'), 
 									);
 									echo form_dropdown("type_id", $arrayType, $exam['type_id'], "class='form-control' id='type_id'
 									data-plugin-selectTwo data-width='100%' data-minimum-results-for-search='Infinity' ");

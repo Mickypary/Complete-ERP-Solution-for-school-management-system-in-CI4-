@@ -143,8 +143,8 @@ class ExamModel extends Model
         ->where('t.section_id', $sectionID)
         ->where('t.session_id', $sessionID)
         ->where('t.branch_id', $branchID);
-        // return $builder->get()->getResultArray();
-        return $builder->getResult();
+        return $builder->get();
+        // return $builder->getResult();
     }
 
 

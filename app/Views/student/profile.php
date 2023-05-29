@@ -829,7 +829,7 @@ $previous_details = json_decode($student['previous_details'], true);
 					
 
 					<!-- For Grade Name -->
-					<!-- <?php if($grade['name'] == "A*"): ?>
+					<?php if($grade['name'] == "A*"): ?>
 					<td valign="middle" style="color: green"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
 					<?php elseif($grade['name'] == "A"): ?>
 						<td valign="middle" style="color: blue"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
@@ -843,7 +843,7 @@ $previous_details = json_decode($student['previous_details'], true);
 						<td valign="middle" style="color: #800000;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
 					<?php elseif($grade['name'] == "F"): ?>
 						<td valign="middle" style="color: #DC143C;"><?=isset($grade['name']) ? $grade['name'] : ''?></td>
-					<?php endif; ?> -->
+					<?php endif; ?>
 
 					
 					<!-- For Grade Remark -->
@@ -874,7 +874,7 @@ $previous_details = json_decode($student['previous_details'], true);
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
-					<td valign="middle"><?=number_format($total_obtain_marks,0,) . "/" . ($total_full_marks + 20)?></td>
+					<td valign="middle"><?=number_format($total_obtain_marks,1,) . "/" . ($total_full_marks + 20)?></td>
 					
 
 					<!-- For Grade Name -->
@@ -959,7 +959,7 @@ $previous_details = json_decode($student['previous_details'], true);
 					<?php } if ($getExam['type_id'] == 5 || $getExam['type_id'] == 6 ) { ?>
 					<tr class="text-weight-semibold">
 						<td valign="top" >GRAND TOTAL :</td>
-						<td valign="top" colspan="<?=$colspan?>"><?=$total_obtain_marks . '/' . $grand_full_marks; ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / ($grand_full_marks+40); echo number_format($percentage, 2, '.', '')?>%</td>
+						<td valign="top" colspan="<?=$colspan?>"><?=$grand_obtain_marks . '/' . ($grand_full_marks); ?>, Average : <?php $percentage = ($grand_obtain_marks * 100) / ($grand_full_marks); echo number_format($percentage, 2, '.', '')?>%</td>
 					</tr>
 					<!-- <tr class="text-weight-semibold">
 						<td valign="top" >GRAND TOTAL IN WORDS :</td>

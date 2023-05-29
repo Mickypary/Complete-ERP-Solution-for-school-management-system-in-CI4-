@@ -33,7 +33,12 @@ if (count($student_array)) {
 		$result = $this->exam_model->getStudentReportCard($studentID, $examID, $sessionID);
 		$student = $result['student'];
 		$getMarksList = $result['exam'];
-		// print_r($result['exam']);
+		// print_r($student_array);
+
+		$get_teacher_allocation = $this->db->table('teacher_allocation')->where('class_id',$classID)->get()->getRowArray();
+		$class_teacher_name =  get_type_name_by_id('staff', $get_teacher_allocation['teacher_id']);
+		// print_r($get_teacher_allocation);
+	// endforeach;
 
 		$getExam = $this->db->table('exam')->where(array('id' => $examID))->get()->getRowArray();
 		// print_r($getExam);
@@ -75,29 +80,37 @@ if (count($student_array)) {
 		<table cellpadding="10" border="1" bordercolor="#0f2df7" class="table table-bordered" style="margin-top: 20px; font-family:georgia,garamond,serif; font-size: 20px; border-width: thin; border-color: #0f2df7;">
 			<tbody>
 				<tr>
-					<th align="left">Name</td>
-					<td><?=$student['first_name'] . " " . $student['last_name']?></td>
+					<th align="left">First Name</td>
+					<td><?=$student['first_name']?></td>
+					<!-- <td><?=$student['first_name'] . " " . $student['last_name']?></td> -->
 					<th align="left">Register No</td>
 					<td><?=$student['register_no']?></td>
 					<th align="left">Roll Number</td>
 					<td><?=$student['roll']?></td>
 				</tr>
 				<tr>
-					<th align="left">Father Name</td>
-					<td><?=$student['father_name']?></td>
+					<th align="left">Last Name</td>
+					<td><?=$student['last_name']?></td>
 					<th align="left">Admission Date</td>
 					<td><?=_d($student['admission_date'])?></td>
 					<th align="left">Date of Birth</td>
 					<td><?=_d($student['birthday'])?></td>
 				</tr>
 				<tr>
-					<th align="left">Mother Name</td>
-					<td><?=$student['mother_name']?></td>
-					<th align="left">Class</td>
+					<th align="left">Subjects Taken</td>
+					<td><?= 'not yet' ?></td>
+					<th align="left">Class</th>
 					<td><?=$student['class_name'] . " (" . $student['section_name'] . ")"?></td>
-					<th align="left">Gender</td>
+					<th align="left">Gender</th>
 					<td><?=ucfirst($student['gender'])?></td>
 				</tr>
+				<tr>
+					<th align="left">Class Teacher</td>
+					<td colspan="2"><?=$class_teacher_name?></td>
+					<th align="left">School Resumes</td>
+					<td align="left" colspan="2"><?= 'not yet' ?></td>
+				</tr>
+
 			</tbody>
 		</table>
 		<table cellpadding="10" border="1" bordercolor="#0f2df7" class="table table-condensed table-bordered mt-lg" style="font-family:georgia,garamond,serif; font-size: 16px; border: 1px solid #0f2df7;">
@@ -311,7 +324,7 @@ if (count($student_array)) {
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
-					<td valign="middle"><?=number_format($total_obtain_marks,0,) . "/" . ($total_full_marks + 20)?></td>
+					<td valign="middle"><?=number_format($total_obtain_marks,1,) . "/" . ($total_full_marks + 20)?></td>
 
 					<!-- For Grade Name -->
 					<?php if($grade['name'] == "A*"): ?>
@@ -360,8 +373,7 @@ if (count($student_array)) {
 					$total_grade_point += isset($grade['grade_point']) ? $grade['grade_point'] : 0;
 					?>
 					<td valign="middle"><?= $total_obtain_mid; ?></td>
-					<td valign="middle"><?=number_format($total_obtain_marks,0,) . "/" . ($total_full_marks + 20)?></td>
-					<!-- <td valign="middle"><?=number_format($total_obtain_xmas,0,) . "/" . ($total_full_marks + 20)?></td> -->
+					<td valign="middle"><?=number_format($total_obtain_marks,1,) . "/" . ($total_full_marks + 20)?></td>
 					
 					<!-- For Grade Name -->
 					<?php if($grade['name'] == "A*"): ?>

@@ -154,24 +154,30 @@ if (count($student_array)) {
 				$total_obtain_mid = 0;
 				$total_obtain_xmas = 0;
 				$total_obtain_lent = 0;
+				$total_xmas_mark = 0;
 				$total_full_marks = 0;
 				$fullMarkDistribution = json_decode($row['mark_distribution'], true);
 				$obtainedMark = json_decode($row['get_mark'], true);
 				$obtainedMid = json_decode($row['mark_mid'], true);
 				$obtainedTotalXmas = json_decode($row['mark_xmas'], true);
 				$obtainedTotalLent = json_decode($row['mark_lent'], true);
-				// print_r($obtainedTotalXmas);
+				$xmasTotal = json_decode($row['xmas_mid_total'], true);
+				$lentTotal = json_decode($row['lent_mid_total'], true);
+				print_r($xmasTotal);
+				print_r($obtainedTotalXmas);
 
 				foreach ($fullMarkDistribution as $i => $val) {
 					$obtained_mark = isset($obtainedMark[$i]) ? floatval($obtainedMark[$i]) : '';
 					$obtained_mid = isset($obtainedMid[$i]) ? floatval($obtainedMid[$i]) : '';
 					$obtained_xmas = isset($obtainedTotalXmas[$i]) ? floatval($obtainedTotalXmas[$i]) : '';
 					$obtained_lent = isset($obtainedTotalLent[$i]) ? floatval($obtainedTotalLent[$i]) : '';
+					$xmas_total = isset($xmasTotal[$i]) ? floatval($xmasTotal[$i]) : '';
+					$lent_total = isset($lentTotal[$i]) ? floatval($lentTotal[$i]) : '';
 
 					if ($getExam['type_id'] == 4 || $getExam['type_id'] == 5 || $getExam['type_id'] == 6) {
 							$total_obtain_marks +=  floatval($obtained_mark) + (number_format(floatval($obtained_mid),0)*0.2);
-							$total_obtain_xmas += floatval($obtained_xmas);
-							$total_obtain_lent += floatval($obtained_lent);
+							$total_obtain_xmas += floatval($obtained_xmas) + number_format(floatval($xmas_total),0) *0.2;
+							$total_obtain_lent += floatval($obtained_lent) + number_format(floatval($lent_total),0) *0.2;
 					}elseif($getExam['type_id'] == 3) {
 						$total_obtain_marks += $obtained_mark;
 					}

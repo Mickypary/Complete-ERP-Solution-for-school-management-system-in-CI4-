@@ -587,34 +587,38 @@ class Exam extends BaseController
                     $totalMark = (isset($value['absent']) ? null : json_encode($sum));
                     $absent = (isset($value['absent']) ? 'on' : '');
                     $query = $this->db->table('mark_rel')->getWhere($arrayMarks);
+                    $query1 = $this->db->table('mid_xmas_total')->getWhere($arrayMarks);
                         if($typeID == 3 && $typeRelID == 4) {
-                            if ($query->getNumRows() > 0) {
+                            if ($query->getNumRows() > 0 && $query1->getNumRows() > 0) {
                                 $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
-                                // $cum_xmas_total = $this->db->table('cum_xmas_total')->where('id', $query->getRow()->id);
+                                $mid_xmas_total = $this->db->table('mid_xmas_total')->where('id', $query1->getRow()->id);
                                 if ($absent) {
                                     $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
                                 }
                                 $builder->update(array('mark_mid' => $inputMark, 'mark_xmas' => $inputMark, 'absent' => $absent));
-                                // $cum_xmas_total->update(array('mark_mid' => $inputMark, 'mark_xmas' => $inputMark, 'absent' => $absent));
+                                $mid_xmas_total->update(array('mark_mid' => $inputMark, 'mark_xmas' => $inputMark, 'absent' => $absent));
                             }else {
                                 $arrayMarks['type_id'] = $typeRelID;
                                 $arrayMarks['mark_mid'] = $inputMark;
                                 $arrayMarks['mark_xmas'] = $inputMark;
                                 $arrayMarks['absent'] = $absent;
                                 $res = $this->db->table('mark_rel')->insert($arrayMarks);
-                                // $cum = $this->db->table('cum_xmas_total')->insert($arrayMarks);
+                                $cum = $this->db->table('mid_xmas_total')->insert($arrayMarks);
                             }
                             
                             
                         // send exam results sms
                         // $this->sms_model->send_sms($arrayMarks, 5);
                         }elseif($typeID == 3 && $typeRelID == 5) {
+                            $query2 = $this->db->table('mid_lent_total')->getWhere($arrayMarks);
                            if ($query->getNumRows() > 0) {
                                 $builder = $this->db->table('mark_rel')->where('id', $query->getRow()->id);
+                                $mid_lent_total = $this->db->table('mid_lent_total')->where('id', $query2->getRow()->id);
                                 if ($absent) {
                                     $this->db->table('mark_rel')->where('id', $query->getRow()->id)->delete();
                                 }
                                 $builder->update(array('mark_mid' => $inputMark, 'mark_lent' => $inputMark, 'absent' => $absent));
+                                $mid_lent_total->update(array('mark_mid' => $inputMark, 'mark_xmas' => $inputMark, 'absent' => $absent));
                             }else {
                                 $arrayMarks['type_id'] = $typeRelID;
                                 $arrayMarks['mark_mid'] = $inputMark;
@@ -622,7 +626,7 @@ class Exam extends BaseController
                                 $arrayMarks['mark_lent'] = $inputMark;
                                 $arrayMarks['absent'] = $absent;
                                 $res = $this->db->table('mark_rel')->insert($arrayMarks);
-                                // $cum = $this->db->table('cum_lent_total')->insert($arrayMarks);
+                                $cum = $this->db->table('mid_lent_total')->insert($arrayMarks);
                             }
                         }elseif($typeID == 3 && $typeRelID == 6) {
                             if ($query->getNumRows() > 0) {
